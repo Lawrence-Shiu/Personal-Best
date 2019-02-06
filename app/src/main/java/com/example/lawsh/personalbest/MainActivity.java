@@ -10,10 +10,12 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     private Button fitBtn;
     private boolean start = false;
+    private TextView textSteps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        textSteps = findViewById(R.id.textSteps);
         fitBtn = findViewById(R.id.startWalk);
         fitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
         /*
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
@@ -69,5 +73,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void setStepCount(long stepCount) {
+        textSteps.setText(String.valueOf(stepCount));
     }
 }

@@ -4,6 +4,9 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.example.lawsh.personalbest.MainActivity;
+
+
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.fitness.Fitness;
@@ -14,14 +17,14 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import edu.ucsd.cse110.googlefitapp.StepCountActivity;
+
 
 public class GoogleFitAdapter implements FitnessService {
     private final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = System.identityHashCode(this) & 0xFFFF;
     private final String TAG = "GoogleFitAdapter";
     private long total;
 
-    //private StepCountActivity activity;
+    private MainActivity activity;
 
     public GoogleFitAdapter(MainActivity activity) {
         this.activity = activity;

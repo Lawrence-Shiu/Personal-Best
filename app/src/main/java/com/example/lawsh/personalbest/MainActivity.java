@@ -48,8 +48,13 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
-        startActivity(setup);
+        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+        int height = pref.getInt("height", 0);
+        if(height == 0) {
+            Intent setup = new Intent(MainActivity.this, SetupActivity.class);
+            startActivity(setup);
+            height = pref.getInt("height", 0);
+        }
 
         goalText = findViewById(R.id.goalText);
         textSteps = findViewById(R.id.textSteps);

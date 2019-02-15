@@ -1,5 +1,6 @@
 package com.example.lawsh.personalbest;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -24,6 +25,10 @@ public class SetupActivity extends AppCompatActivity {
                 String feetText = ((EditText)findViewById(R.id.feet_input)).getText().toString();
                 String inchesText = ((EditText)findViewById(R.id.in_input)).getText().toString();
 
+                SharedPreferences pref = getPreferences(MODE_PRIVATE);
+                SharedPreferences.Editor edit = pref.edit();
+
+
                 if(feetText.equals("") || inchesText.equals("")) {
                     Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT);
                 }
@@ -35,6 +40,7 @@ public class SetupActivity extends AppCompatActivity {
                 }
 
                 heightInInches = feet * 12 + inches;
+                edit.putInt("height", heightInInches);
                 finish();
             }
         });

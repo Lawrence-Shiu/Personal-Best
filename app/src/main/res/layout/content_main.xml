@@ -55,7 +55,7 @@
         android:id="@+id/activeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Active steps: 0"
+        android:text="Active Steps: 0"
         android:paddingTop="15dp"
         android:textSize="40dp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -41,6 +41,7 @@ public class SetupActivity extends AppCompatActivity {
 
                 heightInInches = feet * 12 + inches;
                 edit.putInt("height", heightInInches);
+                edit.apply();
                 finish();
             }
         });

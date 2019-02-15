@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView activeText;
     private EditText goal;
     //private int goal = 5000;
-    //private int totalSteps = 10000;
+    private int totalSteps = 0;
     private int activeSteps = 0;
     private int counter = 0;
     private boolean goalMessageFirstAppearance = true;
@@ -94,21 +94,19 @@ public class MainActivity extends AppCompatActivity {
                 return new GoogleFitAdapter(mainActivity);
             }
         });
-        //String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
+        // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
+        // async runner to constantly update steps
         UpdateAsyncTask runner = new UpdateAsyncTask();
         runner.execute();
 
-        //persistent data for active steps (doesnt work yet)
-        //SharedPreferences prefs = this.getSharedPreferences("personal best", Context.MODE_PRIVATE);
-        //prefs.edit().putInt(ACTIVE_KEY, activeSteps);
         fitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                SharedPreferences sharedPreferences1 = getSharedPreferences("user_goal", MODE_PRIVATE);
-                int totalSteps = sharedPreferences1.getInt("steps", 0);
+                //SharedPreferences prefs = getSharedPreferences("user_goal", MODE_PRIVATE);
+                //int totalSteps = prefs.getInt("steps", 0);
                 if(start == false){
                     start = true;
                     fitBtn.setText(" End walk/run ");
@@ -120,10 +118,13 @@ public class MainActivity extends AppCompatActivity {
                     fitBtn.setText(" Start walk/run ");
                     fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
 
-                    //SharedPreferences prefs = getSharedPreferences("personal best", Context.MODE_PRIVATE);
-                    //prefs.getInt("activeSteps", activeSteps);
+                    SharedPreferences prefs = getSharedPreferences("steps", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+
+                    //prefs.getInt(ACTIVE_KEY, activeSteps);
                     activeSteps += totalSteps - counter;
-                    //prefs.edit().putInt(ACTIVE_KEY, activeSteps).apply();
+                    //editor.putInt(ACTIVE_KEY, activeSteps);
+                    //editor.apply();
 
                     activeText.setText("Active Steps: " + activeSteps);
                 }
@@ -161,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setStepCount(long stepCount) {
         textSteps.setText(String.valueOf(stepCount));
-        //totalSteps = (int)stepCount;
+        totalSteps = (int)stepCount;
     }
 
     private class UpdateAsyncTask extends AsyncTask<String, String, String> {

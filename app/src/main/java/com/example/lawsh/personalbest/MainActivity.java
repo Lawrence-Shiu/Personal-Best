@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean goalMessageFirstAppearance = true;
     private Congratulations congratsMessage;
     private AlertDialog goalReached;
-
+    private int height = 0;
 
     private FitnessService fitnessService;
 
@@ -62,13 +62,8 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        SharedPreferences pref = getPreferences(MODE_PRIVATE);
-        int height = pref.getInt("height", 0);
-        if(height == 0) {
-            Intent setup = new Intent(MainActivity.this, SetupActivity.class);
-            startActivity(setup);
-            height = pref.getInt("height", 0);
-        }
+        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
+        startActivity(setup);
 
         goalText = findViewById(R.id.goalText);
         SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
@@ -80,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
 
         int steps = sharedPreferences.getInt("steps", 0);
         textSteps.setText(Integer.toString(steps));
-
 
         fitBtn = findViewById(R.id.startWalk);
         activeText = findViewById(R.id.activeText);
@@ -131,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         fitnessService.setup();
-
     }
     /*
     public void setFitnessServiceKey(String fitnessServiceKey) {

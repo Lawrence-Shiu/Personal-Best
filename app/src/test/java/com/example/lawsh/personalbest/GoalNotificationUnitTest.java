@@ -20,7 +20,7 @@ import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml")
+@Config(sdk = 17, manifest = "AndroidManifest.xml")
 public class GoalNotificationUnitTest {
     private static final String TEST_SERVICE = "TEST_SERVICE";
 

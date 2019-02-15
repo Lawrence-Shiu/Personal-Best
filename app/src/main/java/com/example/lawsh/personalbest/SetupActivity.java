@@ -17,26 +17,29 @@ public class SetupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
 
+        final SharedPreferences preferences = getSharedPreferences("height", MODE_PRIVATE);
+        if (preferences.getInt("height", 0) != 0) {
+            finish();
+        }
+
         Button done = findViewById(R.id.done_button);
         done.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                SharedPreferences.Editor edit = preferences.edit();
+
                 String feetText = ((EditText)findViewById(R.id.feet_input)).getText().toString();
                 String inchesText = ((EditText)findViewById(R.id.in_input)).getText().toString();
 
-                SharedPreferences pref = getPreferences(MODE_PRIVATE);
-                SharedPreferences.Editor edit = pref.edit();
-
-
                 if(feetText.equals("") || inchesText.equals("")) {
-                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT);
+                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT).show();
                 }
                 int inches = Integer.parseInt(inchesText);
                 int feet = Integer.parseInt(feetText);
 
                 if(inches > 12 || feet > 7) {
-                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT);
+                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT).show();
                 }
 
                 heightInInches = feet * 12 + inches;

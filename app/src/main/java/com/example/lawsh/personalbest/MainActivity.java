@@ -3,6 +3,7 @@ package com.example.lawsh.personalbest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -60,6 +61,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+        int height = pref.getInt("height", 0);
+        if(height == 0) {
+            Intent setup = new Intent(MainActivity.this, SetupActivity.class);
+            startActivity(setup);
+            height = pref.getInt("height", 0);
+        }
 
         goalText = findViewById(R.id.goalText);
         SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);

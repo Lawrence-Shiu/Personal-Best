@@ -30,17 +30,18 @@ public class SetupActivity extends AppCompatActivity {
 
 
                 if(feetText.equals("") || inchesText.equals("")) {
-                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT);
+                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT).show();
                 }
                 int inches = Integer.parseInt(inchesText);
                 int feet = Integer.parseInt(feetText);
 
                 if(inches > 12 || feet > 7) {
-                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT);
+                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT).show();
                 }
 
                 heightInInches = feet * 12 + inches;
                 edit.putInt("height", heightInInches);
+                edit.apply();
                 finish();
             }
         });

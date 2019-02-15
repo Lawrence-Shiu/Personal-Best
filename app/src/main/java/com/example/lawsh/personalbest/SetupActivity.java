@@ -20,17 +20,22 @@ public class SetupActivity extends AppCompatActivity {
         done.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String feetText = findViewById(R.id.feet_input).toString();
-                int feet = Integer.parseInt(feetText);
 
-                String inchesText = findViewById(R.id.in_input).toString();
+                String feetText = ((EditText)findViewById(R.id.feet_input)).getText().toString();
+                String inchesText = ((EditText)findViewById(R.id.in_input)).getText().toString();
+
+                if(feetText.equals("") || inchesText.equals("")) {
+                    Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT);
+                }
                 int inches = Integer.parseInt(inchesText);
+                int feet = Integer.parseInt(feetText);
 
                 if(inches > 12 || feet > 7) {
                     Toast.makeText(getApplicationContext(), "Please input a valid height", Toast.LENGTH_SHORT);
                 }
 
                 heightInInches = feet * 12 + inches;
+                finish();
             }
         });
     }

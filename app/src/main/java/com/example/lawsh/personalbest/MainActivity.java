@@ -1,6 +1,7 @@
 package com.example.lawsh.personalbest;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -46,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
+        startActivity(setup);
 
         goalText = findViewById(R.id.goalText);
         textSteps = findViewById(R.id.textSteps);

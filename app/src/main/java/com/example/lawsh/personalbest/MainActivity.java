@@ -51,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog goalReached;
     private int height = 0;
 
+    public boolean testing = false;
+
     private FitnessService fitnessService;
 
 
@@ -65,65 +67,68 @@ public class MainActivity extends AppCompatActivity {
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
         startActivity(setup);
 
-        goalText = findViewById(R.id.goalText);
-        SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
-        int goal = sharedPreferences.getInt("goal", 5000);
-        goalText.setText("Goal: " + goal + " steps");
+        if(!testing) {
 
-        textSteps = findViewById(R.id.textSteps);
-        sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
+            goalText = findViewById(R.id.goalText);
+            SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
+            int goal = sharedPreferences.getInt("goal", 5000);
+            goalText.setText("Goal: " + goal + " steps");
 
-        int steps = sharedPreferences.getInt("steps", 0);
-        textSteps.setText(Integer.toString(steps));
+            textSteps = findViewById(R.id.textSteps);
+            sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
 
-        fitBtn = findViewById(R.id.startWalk);
-        activeText = findViewById(R.id.activeText);
-        congratsMessage = new Congratulations(this);
-        goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
-        //goalReached.show();
+            int steps = sharedPreferences.getInt("steps", 0);
+            textSteps.setText(Integer.toString(steps));
 
-        FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new GoogleFitAdapter(mainActivity);
-            }
-        });
-        //String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
-        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+            fitBtn = findViewById(R.id.startWalk);
+            activeText = findViewById(R.id.activeText);
+            congratsMessage = new Congratulations(this);
+            goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
+            //goalReached.show();
 
-        UpdateAsyncTask runner = new UpdateAsyncTask();
-        runner.execute();
-
-        //persistent data for active steps (doesnt work yet)
-        //SharedPreferences prefs = this.getSharedPreferences("personal best", Context.MODE_PRIVATE);
-        //prefs.edit().putInt(ACTIVE_KEY, activeSteps);
-        fitBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                SharedPreferences sharedPreferences1 = getSharedPreferences("user_goal", MODE_PRIVATE);
-                int totalSteps = sharedPreferences1.getInt("steps", 0);
-                if(start == false){
-                    start = true;
-                    fitBtn.setText(" End walk/run ");
-                    fitBtn.setBackgroundColor(Color.parseColor("#FFF50410"));
-                    counter = totalSteps;
-
-                }else{
-                    start = false;
-                    fitBtn.setText(" Start walk/run ");
-                    fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
-
-                    //SharedPreferences prefs = getSharedPreferences("personal best", Context.MODE_PRIVATE);
-                    //prefs.getInt("activeSteps", activeSteps);
-                    activeSteps += totalSteps - counter;
-                    //prefs.edit().putInt(ACTIVE_KEY, activeSteps).apply();
-
-                    activeText.setText("Active Steps: " + activeSteps);
+            FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
+                @Override
+                public FitnessService create(MainActivity mainActivity) {
+                    return new GoogleFitAdapter(mainActivity);
                 }
-            }
-        });
-        fitnessService.setup();
+            });
+            //String fitnessServiceKey = getIntent().getStringExtra(FITNESS_SERVICE_KEY);
+            fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+
+            UpdateAsyncTask runner = new UpdateAsyncTask();
+            runner.execute();
+
+            //persistent data for active steps (doesnt work yet)
+            //SharedPreferences prefs = this.getSharedPreferences("personal best", Context.MODE_PRIVATE);
+            //prefs.edit().putInt(ACTIVE_KEY, activeSteps);
+            fitBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    SharedPreferences sharedPreferences1 = getSharedPreferences("user_goal", MODE_PRIVATE);
+                    int totalSteps = sharedPreferences1.getInt("steps", 0);
+                    if (start == false) {
+                        start = true;
+                        fitBtn.setText(" End walk/run ");
+                        fitBtn.setBackgroundColor(Color.parseColor("#FFF50410"));
+                        counter = totalSteps;
+
+                    } else {
+                        start = false;
+                        fitBtn.setText(" Start walk/run ");
+                        fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
+
+                        //SharedPreferences prefs = getSharedPreferences("personal best", Context.MODE_PRIVATE);
+                        //prefs.getInt("activeSteps", activeSteps);
+                        activeSteps += totalSteps - counter;
+                        //prefs.edit().putInt(ACTIVE_KEY, activeSteps).apply();
+
+                        activeText.setText("Active Steps: " + activeSteps);
+                    }
+                }
+            });
+            fitnessService.setup();
+        }
     }
     /*
     public void setFitnessServiceKey(String fitnessServiceKey) {

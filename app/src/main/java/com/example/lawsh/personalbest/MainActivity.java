@@ -198,7 +198,6 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
         setActiveSteps();
         updateWeek();
-        totalSteps += 50;
     }
 
     public void updateWeek(){

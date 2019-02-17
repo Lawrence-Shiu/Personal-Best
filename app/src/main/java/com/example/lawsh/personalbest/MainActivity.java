@@ -205,25 +205,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void setActiveSteps(){
         if(start == true){
-            activeSteps = totalSteps - counter;
+            //activeSteps = totalSteps - counter;
+            activeSteps += 1;
 
             if(oldActive != activeSteps) {
                 String printTotal = "Active Steps: " + Integer.toString(prefs.getInt(ACTIVE_KEY, 0) + activeSteps);
-                double stride = prefs.getInt("height", 0) *.413/12;
+                double stride = prefs.getInt("height", 0) *.413/12/5280;
+                System.out.println(stride);
                 activeText.setText(printTotal);
 
-                DecimalFormat df = new DecimalFormat();
-                df.setMaximumFractionDigits(4);
-
                 double timeElapsed = ((double) System.nanoTime() - timeCounter) / 1000000000.0/60/60;
-                //String mph = df.format(activeSteps/timeElapsed);
                 double mph = activeSteps*stride / timeElapsed;
+
                 mph *= 1000;
-                mph = (int)mph/1000;
+                mph = (int)mph;
+                mph = mph/1000;
 
                 velocity.setText(mph + " MPH");
                 oldActive = activeSteps;
-
             }
         }
     }

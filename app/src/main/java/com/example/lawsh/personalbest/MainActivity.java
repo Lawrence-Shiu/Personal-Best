@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView velocity;
     private EditText goal;
 
-
+    private int subGoal;
     private int totalSteps = 0;
     private int activeSteps = 0;
     private int oldActive = 0;
@@ -108,6 +108,9 @@ public class MainActivity extends AppCompatActivity {
             // goal congratulation objects
             congratsMessage = new Congratulations(this);
             goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
+
+            //set subgoal
+            subGoal = ((totalSteps/500)+1)*500;
 
             // reset active steps for each day
             resetActiveSteps();
@@ -195,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
         setActiveSteps();
         updateWeek();
+        totalSteps += 50;
     }
 
     public void updateWeek(){
@@ -280,6 +284,10 @@ public class MainActivity extends AppCompatActivity {
             if(totalSteps >= goal) {
                 goalMessageFirstAppearance = false;
                 goalReached.show();
+            }
+            if(totalSteps >= subGoal && totalSteps < goal){
+                Toast.makeText(MainActivity.this, "You’ve increased your daily steps by over 500 steps. Keep up the good work!", Toast.LENGTH_LONG).show();
+                subGoal = ((totalSteps/500)+1)*500;
             }
         }
     }

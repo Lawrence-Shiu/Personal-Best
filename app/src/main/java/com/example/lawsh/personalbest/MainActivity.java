@@ -27,6 +27,7 @@ import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
 import com.google.android.gms.common.data.DataBufferObserver;
 
+import java.text.DecimalFormat;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -43,13 +44,17 @@ public class MainActivity extends AppCompatActivity {
     private TextView textSteps;
     private TextView goalText;
     private TextView activeText;
+    private TextView velocity;
     private EditText goal;
     //private int goal = 5000;
 
 
     private int totalSteps = 0;
     private int activeSteps = 0;
+    private int oldActive = 0;
+    private int totalActiveSteps = 0;
     private int counter = 0;
+    private long timeCounter = 0;
     private boolean goalMessageFirstAppearance = true;
     private Congratulations congratsMessage;
     private AlertDialog goalReached;
@@ -58,13 +63,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean testing = false;
 
     private FitnessService fitnessService;
-
-
+    SharedPreferences prefs;
+    SharedPreferences.Editor editor;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        prefs = getSharedPreferences("user_goal", Context.MODE_PRIVATE);
+        editor = prefs.edit();
 
         // go to set up screen
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
@@ -74,21 +81,22 @@ public class MainActivity extends AppCompatActivity {
 
             // set goal text
             goalText = findViewById(R.id.goalText);
-            SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
-            int goal = sharedPreferences.getInt("goal", 5000);
+            int goal = prefs.getInt("goal", 5000);
             goalText.setText("Goal: " + goal + " steps");
 
             // set step count text
             textSteps = findViewById(R.id.textSteps);
-            int steps = sharedPreferences.getInt("steps", 0);
+            int steps = prefs.getInt("steps", 0);
             textSteps.setText(Integer.toString(steps));
 
             // set active step count text
             activeText = findViewById(R.id.activeText);
-            activeSteps = sharedPreferences.getInt(ACTIVE_KEY, 0);
+            activeSteps = prefs.getInt(ACTIVE_KEY, 0);
             activeText.setText("Active Steps: " + Integer.toString(activeSteps));
 
+            velocity = findViewById(R.id.velocity);
             fitBtn = findViewById(R.id.startWalk);
+            setGoal = findViewById(R.id.newGoal);
 
             congratsMessage = new Congratulations(this);
             goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
@@ -104,35 +112,38 @@ public class MainActivity extends AppCompatActivity {
             fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
             // async runner to constantly update steps
-            UpdateAsyncTask runner = new UpdateAsyncTask();
-            runner.execute();
+            UpdateAsyncPassiveCount passiveRunner = new UpdateAsyncPassiveCount();
+            passiveRunner.execute();
+            //UpdateAsyncGoal goalRunner = new UpdateAsyncGoal();
+            //goalRunner.execute();
+
+            setGoal.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog setCustomGoal =  congratsMessage.onCreateCustomGoal(savedInstanceState);
+                    setCustomGoal.show();
+                }
+            });
 
             fitBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    //SharedPreferences prefs = getSharedPreferences("user_goal", MODE_PRIVATE);
-                    //int totalSteps = prefs.getInt("steps", 0);
                     if (start == false) {
                         start = true;
                         fitBtn.setText(" End walk/run ");
                         fitBtn.setBackgroundColor(Color.parseColor("#FFF50410"));
                         counter = totalSteps;
+                        timeCounter = System.nanoTime();
 
                     } else {
                         start = false;
                         fitBtn.setText(" Start walk/run ");
                         fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
 
-                        SharedPreferences prefs = getSharedPreferences("user_goal", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = prefs.edit();
-
-                        activeSteps = prefs.getInt(ACTIVE_KEY, 0);
-                        activeSteps += totalSteps - counter;
-                        editor.putInt(ACTIVE_KEY, activeSteps);
+                        totalActiveSteps = prefs.getInt(ACTIVE_KEY, 0);
+                        totalActiveSteps += activeSteps;
+                        editor.putInt(ACTIVE_KEY, totalActiveSteps);
                         editor.apply();
-
-                        activeText.setText("Active Steps: " + activeSteps);
                     }
                 }
             });
@@ -170,19 +181,87 @@ public class MainActivity extends AppCompatActivity {
     public void setStepCount(long stepCount) {
         textSteps.setText(String.valueOf(stepCount));
         totalSteps = (int)stepCount;
+        totalSteps++; //testing purposes only, take out after
+        setActiveSteps();
     }
 
-    private class UpdateAsyncTask extends AsyncTask<String, String, String> {
+    public void setActiveSteps(){
+        if(start == true){
+            activeSteps = totalSteps - counter;
+            if(oldActive != activeSteps) {
+                String printTotal = "Active Steps: " + Integer.toString(prefs.getInt(ACTIVE_KEY, 0) + activeSteps);
+                activeText.setText(printTotal);
+
+                DecimalFormat df = new DecimalFormat();
+                df.setMaximumFractionDigits(4);
+
+                double timeElapsed = ((double) System.nanoTime() - timeCounter) / 1000000000.0/60/60;
+                //String mph = df.format(activeSteps/timeElapsed);
+                double mph = activeSteps / timeElapsed;
+                mph *= 1000;
+                mph = (int)mph/1000;
+
+                velocity.setText(mph + " MPH");
+                oldActive = activeSteps;
+            }
+
+        }
+    }
+
+
+    private class UpdateAsyncPassiveCount extends AsyncTask<String, String, String> {
         private String resp;
         @Override
         protected String doInBackground(String... params){
             try {
+
                 while(true) {
                     fitnessService.updateStepCount();
                     if(goalMessageFirstAppearance == true){
                         publishProgress();
                     }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
 
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                resp = e.getMessage();
+            }
+            return resp;
+
+        }
+        @Override
+        protected void onPostExecute(String result){ }
+
+        @Override
+        protected void onPreExecute(){  }
+
+        @Override
+        protected void onProgressUpdate(String... text){
+            goalMessageFirstAppearance = false;
+            int goal = prefs.getInt("goal", 5000);
+            if(Integer.parseInt(textSteps.getText().toString()) >= goal) {
+                goalReached.show();
+            }
+        }
+    }
+    private class UpdateAsyncGoal extends AsyncTask<String, String, String> {
+        private String resp;
+        @Override
+        protected String doInBackground(String... params){
+            try {
+
+                while(true) {
+                    /*
+                    if(goalMessageFirstAppearance == true){
+                        publishProgress();
+                    }
+                    */
                     try {
                         Thread.sleep(250);
                     } catch (InterruptedException e) {
@@ -207,8 +286,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(String... text){
             goalMessageFirstAppearance = false;
-            SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
-            int goal = sharedPreferences.getInt("goal", 5000);
+            int goal = prefs.getInt("goal", 5000);
             if(Integer.parseInt(textSteps.getText().toString()) >= goal) {
                 goalReached.show();
             }
@@ -285,8 +363,7 @@ public class MainActivity extends AppCompatActivity {
         public AlertDialog onCreateDefaultGoal(final Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
-            SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
-            int goal = sharedPreferences.getInt("goal", 5000);
+            int goal = prefs.getInt("goal", 5000);
             builder.setTitle("Setup a Default Goal");
             builder.setMessage("Is " + (goal+500) + " steps ok?");
 
@@ -338,26 +415,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveDefaultGoal() {
-        SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
-        int goal = sharedPreferences.getInt("goal", 5000);///////////////////////////
+        int goal = prefs.getInt("goal", 5000);///////////////////////////
         goalText.setText("Goal: " + (goal + 500) + " steps");
-        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("goal", goal+500);
         editor.apply();
         Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
+        goalMessageFirstAppearance = true;
     }
 
     public void saveCustomGoal(View v) {
         goal = (EditText)v.findViewById(R.id.custom_goal);
-
-        SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putInt("goal",Integer.parseInt(goal.getText().toString()));
         editor.apply();
         int stepsGoal = Integer.parseInt(goal.getText().toString());
         goalText.setText("Goal: " + stepsGoal + " steps");
         Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
+        goalMessageFirstAppearance = true;
     }
 
 }

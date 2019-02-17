@@ -18,8 +18,9 @@ import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
 
 import static org.junit.Assert.assertEquals;
-
+/*
 @RunWith(RobolectricTestRunner.class)
+
 @Config(sdk = 17, manifest = "AndroidManifest.xml")
 public class GoalNotificationUnitTest {
     private static final String TEST_SERVICE = "TEST_SERVICE";
@@ -55,6 +56,7 @@ public class GoalNotificationUnitTest {
         assertEquals(String.valueOf(nextStepCount), textSteps.getText().toString());
     }
 */
+/*
     @Test
     public void testCongrats() {
         nextStepCount = 5000;
@@ -88,3 +90,4 @@ public class GoalNotificationUnitTest {
     }
 }
 
+*/

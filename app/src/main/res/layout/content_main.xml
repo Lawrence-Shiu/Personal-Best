@@ -74,5 +74,14 @@
         android:layout_marginTop="175dp"
         android:text=" Start walk/run " />
 
+    <Button
+        android:id="@+id/newGoal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="30dp"
+        android:background="#7991C5"
+        android:layout_marginTop="45dp"
+        android:text=" Set new goal " />
+
 
 </LinearLayout>

@@ -37,12 +37,16 @@ public class MainActivity extends AppCompatActivity {
     //private static final String TAG = "mainActivity";
 
     private Button fitBtn;
+    private Button setGoal;
+
     private boolean start = false;
     private TextView textSteps;
     private TextView goalText;
     private TextView activeText;
     private EditText goal;
     //private int goal = 5000;
+
+
     private int totalSteps = 0;
     private int activeSteps = 0;
     private int counter = 0;
@@ -59,25 +63,29 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
+        // go to set up screen
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
         startActivity(setup);
 
+        // set goal text
         goalText = findViewById(R.id.goalText);
         SharedPreferences sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
         int goal = sharedPreferences.getInt("goal", 5000);
         goalText.setText("Goal: " + goal + " steps");
 
+        // set step count text
         textSteps = findViewById(R.id.textSteps);
-        sharedPreferences = getSharedPreferences("user_goal", MODE_PRIVATE);
-
         int steps = sharedPreferences.getInt("steps", 0);
         textSteps.setText(Integer.toString(steps));
 
-        fitBtn = findViewById(R.id.startWalk);
+        // set active step count text
         activeText = findViewById(R.id.activeText);
+        activeSteps = sharedPreferences.getInt(ACTIVE_KEY, 0);
+        activeText.setText("Active Steps: " + Integer.toString(activeSteps));
+
+        fitBtn = findViewById(R.id.startWalk);
+
         congratsMessage = new Congratulations(this);
         goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
         //goalReached.show();
@@ -112,13 +120,13 @@ public class MainActivity extends AppCompatActivity {
                     fitBtn.setText(" Start walk/run ");
                     fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
 
-                    SharedPreferences prefs = getSharedPreferences("steps", Context.MODE_PRIVATE);
+                    SharedPreferences prefs = getSharedPreferences("user_goal", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
 
-                    //prefs.getInt(ACTIVE_KEY, activeSteps);
+                    activeSteps = prefs.getInt(ACTIVE_KEY,0);
                     activeSteps += totalSteps - counter;
-                    //editor.putInt(ACTIVE_KEY, activeSteps);
-                    //editor.apply();
+                    editor.putInt(ACTIVE_KEY, activeSteps);
+                    editor.apply();
 
                     activeText.setText("Active Steps: " + activeSteps);
                 }

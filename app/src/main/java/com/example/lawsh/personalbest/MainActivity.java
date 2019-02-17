@@ -28,6 +28,8 @@ import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
 import com.google.android.gms.common.data.DataBufferObserver;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -35,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String FITNESS_SERVICE_KEY = "FITNESS_SERVICE_KEY";
     private String fitnessServiceKey = "GOOGLE_FIT";
     private String ACTIVE_KEY = "ACTIVE_STEPS";
+    private String PASSIVE_KEY = "PASSIVE_KEY";
+
     //private static final String TAG = "mainActivity";
 
     private Button fitBtn;
@@ -46,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView activeText;
     private TextView velocity;
     private EditText goal;
-    //private int goal = 5000;
 
 
     private int totalSteps = 0;
@@ -58,21 +61,24 @@ public class MainActivity extends AppCompatActivity {
     private boolean goalMessageFirstAppearance = true;
     private Congratulations congratsMessage;
     private AlertDialog goalReached;
-    private int height = 0;
+    private String oldDay;
+
 
     public boolean testing = false;
-
+    String dayOfTheWeek;
     private FitnessService fitnessService;
     SharedPreferences prefs;
     SharedPreferences.Editor editor;
-
+    SimpleDateFormat sdf;
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         prefs = getSharedPreferences("user_goal", Context.MODE_PRIVATE);
         editor = prefs.edit();
-
+        sdf= new SimpleDateFormat("EEEE");
+        Date d = new Date();
+        dayOfTheWeek = sdf.format(d);
         // go to set up screen
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
         startActivity(setup);
@@ -94,13 +100,17 @@ public class MainActivity extends AppCompatActivity {
             activeSteps = prefs.getInt(ACTIVE_KEY, 0);
             activeText.setText("Active Steps: " + Integer.toString(activeSteps));
 
+            // find buttons and velocity text
             velocity = findViewById(R.id.velocity);
             fitBtn = findViewById(R.id.startWalk);
             setGoal = findViewById(R.id.newGoal);
 
+            // goal congratulation objects
             congratsMessage = new Congratulations(this);
             goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
-            //goalReached.show();
+
+            // reset active steps for each day
+            resetActiveSteps();
 
             FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
                 @Override
@@ -114,8 +124,6 @@ public class MainActivity extends AppCompatActivity {
             // async runner to constantly update steps
             UpdateAsyncPassiveCount passiveRunner = new UpdateAsyncPassiveCount();
             passiveRunner.execute();
-            //UpdateAsyncGoal goalRunner = new UpdateAsyncGoal();
-            //goalRunner.execute();
 
             setGoal.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -144,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
                         totalActiveSteps += activeSteps;
                         editor.putInt(ACTIVE_KEY, totalActiveSteps);
                         editor.apply();
+
+
                     }
                 }
             });
@@ -181,13 +191,22 @@ public class MainActivity extends AppCompatActivity {
     public void setStepCount(long stepCount) {
         textSteps.setText(String.valueOf(stepCount));
         totalSteps = (int)stepCount;
-        //totalSteps++; //testing purposes only, take out after
+        editor.putInt(PASSIVE_KEY, totalSteps);
+        editor.apply();
         setActiveSteps();
+        updateWeek();
+    }
+
+    public void updateWeek(){
+        editor.putInt(dayOfTheWeek+"Passive", totalSteps);
+        editor.putInt(dayOfTheWeek+"Active", activeSteps);
+        editor.apply();
     }
 
     public void setActiveSteps(){
         if(start == true){
             activeSteps = totalSteps - counter;
+
             if(oldActive != activeSteps) {
                 String printTotal = "Active Steps: " + Integer.toString(prefs.getInt(ACTIVE_KEY, 0) + activeSteps);
                 double stride = prefs.getInt("height", 0) *.413/12;
@@ -204,9 +223,22 @@ public class MainActivity extends AppCompatActivity {
 
                 velocity.setText(mph + " MPH");
                 oldActive = activeSteps;
-            }
 
+            }
         }
+    }
+
+    public void resetActiveSteps(){
+        oldDay = prefs.getString("DOW","");
+        if(dayOfTheWeek != oldDay) {
+            activeSteps = 0;
+            editor.putInt(ACTIVE_KEY, activeSteps);
+            oldDay = dayOfTheWeek;
+            editor.putString("DOW", oldDay);
+
+            editor.apply();
+        }
+
     }
 
 
@@ -251,48 +283,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    private class UpdateAsyncGoal extends AsyncTask<String, String, String> {
-        private String resp;
-        @Override
-        protected String doInBackground(String... params){
-            try {
 
-                while(true) {
-                    /*
-                    if(goalMessageFirstAppearance == true){
-                        publishProgress();
-                    }
-                    */
-                    try {
-                        Thread.sleep(250);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                resp = e.getMessage();
-            }
-            return resp;
-
-        }
-        @Override
-        protected void onPostExecute(String result){ }
-
-        @Override
-        protected void onPreExecute(){  }
-
-        @Override
-        protected void onProgressUpdate(String... text){
-
-            int goal = prefs.getInt("goal", 5000);
-            if(totalSteps >= goal) {
-                goalReached.show();
-            }
-        }
-    }
 
     private class Congratulations implements Observer {
 

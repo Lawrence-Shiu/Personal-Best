@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
     public void setStepCount(long stepCount) {
         textSteps.setText(String.valueOf(stepCount));
         totalSteps = (int)stepCount;
-        totalSteps++; //testing purposes only, take out after
+        //totalSteps++; //testing purposes only, take out after
         setActiveSteps();
     }
 
@@ -190,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
             activeSteps = totalSteps - counter;
             if(oldActive != activeSteps) {
                 String printTotal = "Active Steps: " + Integer.toString(prefs.getInt(ACTIVE_KEY, 0) + activeSteps);
+                double stride = prefs.getInt("height", 0) *.413/12;
                 activeText.setText(printTotal);
 
                 DecimalFormat df = new DecimalFormat();
@@ -197,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
 
                 double timeElapsed = ((double) System.nanoTime() - timeCounter) / 1000000000.0/60/60;
                 //String mph = df.format(activeSteps/timeElapsed);
-                double mph = activeSteps / timeElapsed;
+                double mph = activeSteps*stride / timeElapsed;
                 mph *= 1000;
                 mph = (int)mph/1000;
 
@@ -243,9 +244,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(String... text){
-            goalMessageFirstAppearance = false;
             int goal = prefs.getInt("goal", 5000);
-            if(Integer.parseInt(textSteps.getText().toString()) >= goal) {
+            if(totalSteps >= goal) {
+                goalMessageFirstAppearance = false;
                 goalReached.show();
             }
         }
@@ -285,9 +286,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(String... text){
-            goalMessageFirstAppearance = false;
+
             int goal = prefs.getInt("goal", 5000);
-            if(Integer.parseInt(textSteps.getText().toString()) >= goal) {
+            if(totalSteps >= goal) {
                 goalReached.show();
             }
         }

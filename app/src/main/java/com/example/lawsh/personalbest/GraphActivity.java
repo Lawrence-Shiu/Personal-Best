@@ -1,11 +1,15 @@
 package com.example.lawsh.personalbest;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.graphics.Color;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -24,27 +28,53 @@ public class GraphActivity extends AppCompatActivity {
             "PASSIVE_STEPS_3", "PASSIVE_STEPS_4", "PASSIVE_STEPS_5", "PASSIVE_STEPS_6"};
     SharedPreferences pref;
 
-    private int[] active_steps; //SU M TU W TH F SA
-    private int[] passive_steps; //SU M TU W TH F SA
+    public int[] active_steps; //SU M TU W TH F SA
+    public int[] passive_steps; //SU M TU W TH F SA
+
+    public int current_goal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph);
 
-        active_steps = new int[DAYS];
-        passive_steps = new int[DAYS];
-
-        for(int i = 0; i < DAYS; i++) {
-            pref = getSharedPreferences(ACTIVE_KEY[i], MODE_PRIVATE);
-            active_steps[i] = pref.getInt(ACTIVE_KEY[i], 0);
-            pref = getSharedPreferences(PASSIVE_KEY[i], MODE_PRIVATE);
-            passive_steps[i] = pref.getInt(PASSIVE_KEY[i], 0);
+        if(savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                active_steps = new int[]{0,0,0,0,0,0,0};
+                passive_steps = new int[]{0,0,0,0,0,0,0};
+                current_goal = 5000;
+            } else {
+                active_steps = extras.getIntArray("ACTIVE_STEPS");
+                passive_steps = extras.getIntArray("PASSIVE_STEPS");
+                current_goal = extras.getInt("CURRENT_GOAL");
+            }
         }
+
+        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Progress Report");
+
 
         HorizontalBarChart progress = (HorizontalBarChart) findViewById(R.id.progress_graph);
 
         drawChart(progress);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId() ) {
+            case android.R.id.home:
+                Intent intent = new Intent(GraphActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void drawChart(HorizontalBarChart chart) {
@@ -64,7 +94,7 @@ public class GraphActivity extends AppCompatActivity {
             dataset = new BarDataSet(entries, "");
             dataset.setDrawIcons(false);
             dataset.setColors(getColors());
-            dataset.setStackLabels(new String[]{"Passive, Active"});
+            dataset.setStackLabels(new String[]{"Passive", "Active"});
 
             ArrayList<IBarDataSet> datasets = new ArrayList<>();
             datasets.add(dataset);
@@ -76,6 +106,12 @@ public class GraphActivity extends AppCompatActivity {
             chart.setData(data);
         }
 
+        LimitLine goalLine = new LimitLine(current_goal, "Current Goal");
+        goalLine.setLineColor(Color.BLACK);
+        goalLine.setLineWidth(4);
+
+        chart.getAxisLeft().addLimitLine(goalLine);
+
         chart.setFitBars(true);
         chart.invalidate();
     }
@@ -86,5 +122,14 @@ public class GraphActivity extends AppCompatActivity {
         colors[1] = Color.RED; //passive
 
         return colors;
+    }
+
+    public void setSteps(int[] active, int[] passive) {
+        active_steps = active;
+        passive_steps = passive;
+    }
+
+    private void endActivity() {
+        finish();
     }
 }

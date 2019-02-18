@@ -17,7 +17,7 @@ public class SetupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
 
-        final SharedPreferences preferences = getSharedPreferences("user_goal", MODE_PRIVATE);
+        final SharedPreferences preferences = getSharedPreferences("PB", MODE_PRIVATE);
         if (preferences.getInt("height", 0) != 0) {
             finish();
         }

@@ -21,7 +21,7 @@ public class SetupTest {
     private EditText feetText;
     private EditText inchesText;
     private Button doneBtn;
-    private SharedPreferences pref = RuntimeEnvironment.application.getSharedPreferences("height", Context.MODE_PRIVATE);
+    private SharedPreferences pref = RuntimeEnvironment.application.getSharedPreferences("PB", Context.MODE_PRIVATE);
 
     @Before
     public void setup() {

@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView activeText;
     private TextView velocity;
     private EditText goal;
+    private Toolbar mToolbar;
 
     private int subGoal;
     private int totalSteps = 0;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        prefs = getSharedPreferences("user_goal", Context.MODE_PRIVATE);
+        prefs = getSharedPreferences("PB", Context.MODE_PRIVATE);
         editor = prefs.edit();
         sdf= new SimpleDateFormat("EEEE");
         Date d = new Date();
@@ -82,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
         // go to set up screen
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
         startActivity(setup);
+
+        mToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
 
         if(!testing) {
 
@@ -184,8 +188,17 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.action_progress) {
+            Intent prog = new Intent(MainActivity.this, GraphActivity.class);
+            int[] active_steps = new int[7];
+            int[] passive_steps = new int[7];
+
+            /* Populate int arrays from SharedPreferences */
+
+            prog.putExtra("ACTIVE_STEPS", active_steps);
+            prog.putExtra("PASSIVE_STEPS", passive_steps);
+            prog.putExtra("CURRENT_GOAL", prefs.getInt("goal", 5000));
+            startActivity(prog);
         }
 
         return super.onOptionsItemSelected(item);

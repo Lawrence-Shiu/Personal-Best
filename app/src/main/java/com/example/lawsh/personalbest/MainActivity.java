@@ -30,6 +30,7 @@ import com.google.android.gms.common.data.DataBufferObserver;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private String fitnessServiceKey = "GOOGLE_FIT";
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
+    private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
     //private static final String TAG = "mainActivity";
 
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private int activeSteps = 0;
     private int oldActive = 0;
     private int totalActiveSteps = 0;
+    private int oldTotal = 0;
     private int counter = 0;
     private long timeCounter = 0;
     private boolean goalMessageFirstAppearance = true;
@@ -204,6 +207,11 @@ public class MainActivity extends AppCompatActivity {
             int[] passive_steps = new int[7];
 
             /* Populate int arrays from SharedPreferences */
+            for(int i = 0; i < active_steps.length; i++){
+                active_steps[i] = prefs.getInt(dayArray[i]+"Active",0);
+                passive_steps[i] = prefs.getInt(dayArray[i]+"Passive",0);
+
+            }
 
             prog.putExtra("ACTIVE_STEPS", active_steps);
             prog.putExtra("PASSIVE_STEPS", passive_steps);
@@ -215,12 +223,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setStepCount(long stepCount) {
-        textSteps.setText(String.valueOf(stepCount));
-        totalSteps = (int)stepCount;
-        editor.putInt(PASSIVE_KEY, totalSteps);
-        editor.apply();
-        setActiveSteps();
-        updateWeek();
+        if(oldTotal != totalSteps) {
+            textSteps.setText(String.valueOf(stepCount));
+            totalSteps = (int) stepCount;
+            editor.putInt(PASSIVE_KEY, totalSteps);
+            editor.apply();
+            setActiveSteps();
+            updateWeek();
+            oldTotal = totalSteps;
+        }
     }
 
     public void updateWeek(){

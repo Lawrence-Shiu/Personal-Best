@@ -21,12 +21,12 @@ import java.util.ArrayList;
 
 public class GraphActivity extends AppCompatActivity {
 
-    private final int DAYS = 7;
-    private final String ACTIVE_KEY[] = {"ACTIVE_STEPS", "ACTIVE_STEPS_1", "ACTIVE_STEPS_2",
-        "ACTIVE_STEPS_3", "ACTIVE_STEPS_4", "ACTIVE_STEPS_5", "ACTIVE_STEPS_6"};
-    private final String PASSIVE_KEY[] = {"PASSIVE_STEPS", "PASSIVE_STEPS_1", "PASSIVE_STEPS_2",
-            "PASSIVE_STEPS_3", "PASSIVE_STEPS_4", "PASSIVE_STEPS_5", "PASSIVE_STEPS_6"};
-    SharedPreferences pref;
+    //private final int DAYS = 7;
+    //private final String ACTIVE_KEY[] = {"ACTIVE_STEPS", "ACTIVE_STEPS_1", "ACTIVE_STEPS_2",
+    //    "ACTIVE_STEPS_3", "ACTIVE_STEPS_4", "ACTIVE_STEPS_5", "ACTIVE_STEPS_6"};
+    //private final String PASSIVE_KEY[] = {"PASSIVE_STEPS", "PASSIVE_STEPS_1", "PASSIVE_STEPS_2",
+    //        "PASSIVE_STEPS_3", "PASSIVE_STEPS_4", "PASSIVE_STEPS_5", "PASSIVE_STEPS_6"};
+    //SharedPreferences pref;
 
     public int[] active_steps; //SU M TU W TH F SA
     public int[] passive_steps; //SU M TU W TH F SA
@@ -67,9 +67,9 @@ public class GraphActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId() ) {
             case android.R.id.home:
-                Intent intent = new Intent(GraphActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                //Intent intent = new Intent(GraphActivity.this, MainActivity.class);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                //startActivity(intent);
                 finish();
                 return true;
             default:
@@ -80,7 +80,7 @@ public class GraphActivity extends AppCompatActivity {
     private void drawChart(HorizontalBarChart chart) {
         ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
         for(int i = 0; i < 7; i++) {
-            entries.add(new BarEntry(i, new float[]{active_steps[i], passive_steps[i]}));
+            entries.add(new BarEntry(i, new float[]{active_steps[i], passive_steps[i] - active_steps[i]}));
         }
 
         BarDataSet dataset;
@@ -94,7 +94,7 @@ public class GraphActivity extends AppCompatActivity {
             dataset = new BarDataSet(entries, "");
             dataset.setDrawIcons(false);
             dataset.setColors(getColors());
-            dataset.setStackLabels(new String[]{"Passive", "Active"});
+            dataset.setStackLabels(new String[]{"Active", "Passive"});
 
             ArrayList<IBarDataSet> datasets = new ArrayList<>();
             datasets.add(dataset);
@@ -118,18 +118,19 @@ public class GraphActivity extends AppCompatActivity {
 
     private int[] getColors() {
         int[] colors = new int[2];
-        colors[0] = Color.GREEN; //passive
-        colors[1] = Color.RED; //passive
+        colors[0] = Color.RED; //passive
+        colors[1] = Color.GREEN; //passive
 
         return colors;
     }
 
-    public void setSteps(int[] active, int[] passive) {
-        active_steps = active;
-        passive_steps = passive;
-    }
+    //public void setSteps(int[] active, int[] passive) {
+    //    active_steps = active;
+    //    passive_steps = passive;
+   // }
 
-    private void endActivity() {
+    /* private void endActivity() {
         finish();
     }
+    */
 }

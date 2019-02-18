@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
             // set step count text
             textSteps = findViewById(R.id.textSteps);
-            int steps = prefs.getInt("steps", 0);
+            int steps = prefs.getInt(PASSIVE_KEY, 0);
             textSteps.setText(Integer.toString(steps));
 
             // set active step count text
@@ -148,8 +148,7 @@ public class MainActivity extends AppCompatActivity {
             add500.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    totalSteps += 500;
-                    setStepCount(totalSteps);
+                    setStepCount(totalSteps+=500);
                 }
             });
 

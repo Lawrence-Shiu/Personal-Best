@@ -208,8 +208,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setActiveSteps(){
         if(start == true){
-            //activeSteps = totalSteps - counter;
-            activeSteps += 1;
+            activeSteps = totalSteps - counter;
 
             if(oldActive != activeSteps) {
                 String printTotal = "Active Steps: " + Integer.toString(prefs.getInt(ACTIVE_KEY, 0) + activeSteps);

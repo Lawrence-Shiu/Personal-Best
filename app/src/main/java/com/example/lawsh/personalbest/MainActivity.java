@@ -30,6 +30,7 @@ import com.google.android.gms.common.data.DataBufferObserver;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -38,12 +39,13 @@ public class MainActivity extends AppCompatActivity {
     private String fitnessServiceKey = "GOOGLE_FIT";
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
+    private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
     //private static final String TAG = "mainActivity";
 
     private Button fitBtn;
     private Button setGoal;
-
+    private Button add500;
     private boolean start = false;
     private TextView textSteps;
     private TextView goalText;
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private int activeSteps = 0;
     private int oldActive = 0;
     private int totalActiveSteps = 0;
+    private int oldTotal = 0;
     private int counter = 0;
     private long timeCounter = 0;
     private boolean goalMessageFirstAppearance = true;
@@ -110,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
             velocity = findViewById(R.id.velocity);
             fitBtn = findViewById(R.id.startWalk);
             setGoal = findViewById(R.id.newGoal);
+            add500 = findViewById(R.id.add500);
 
             // goal congratulation objects
             congratsMessage = new Congratulations(this);
@@ -141,6 +145,13 @@ public class MainActivity extends AppCompatActivity {
                     setCustomGoal.show();
                 }
             });
+            add500.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    totalSteps += 500;
+                    setStepCount(totalSteps);
+                }
+            });
 
             fitBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -156,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
                         start = false;
                         fitBtn.setText(" Start walk/run ");
                         fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
-
+                        Toast.makeText(MainActivity.this, "Good Job!", Toast.LENGTH_SHORT).show();
                         totalActiveSteps = prefs.getInt(ACTIVE_KEY, 0);
                         totalActiveSteps += activeSteps;
                         editor.putInt(ACTIVE_KEY, totalActiveSteps);
@@ -196,6 +207,11 @@ public class MainActivity extends AppCompatActivity {
             int[] passive_steps = new int[7];
 
             /* Populate int arrays from SharedPreferences */
+            for(int i = 0; i < active_steps.length; i++){
+                active_steps[i] = prefs.getInt(dayArray[i]+"Active",0);
+                passive_steps[i] = prefs.getInt(dayArray[i]+"Passive",0);
+
+            }
 
             prog.putExtra("ACTIVE_STEPS", active_steps);
             prog.putExtra("PASSIVE_STEPS", passive_steps);
@@ -207,12 +223,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setStepCount(long stepCount) {
-        textSteps.setText(String.valueOf(stepCount));
-        totalSteps = (int)stepCount;
-        editor.putInt(PASSIVE_KEY, totalSteps);
-        editor.apply();
-        setActiveSteps();
-        updateWeek();
+        if(oldTotal != totalSteps) {
+            textSteps.setText(String.valueOf(stepCount));
+            totalSteps = (int) stepCount;
+            editor.putInt(PASSIVE_KEY, totalSteps);
+            editor.apply();
+            setActiveSteps();
+            updateWeek();
+            oldTotal = totalSteps;
+        }
     }
 
     public void updateWeek(){

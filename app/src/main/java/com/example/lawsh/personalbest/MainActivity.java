@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button fitBtn;
     private Button setGoal;
-
+    private Button add500;
     private boolean start = false;
     private TextView textSteps;
     private TextView goalText;
@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             velocity = findViewById(R.id.velocity);
             fitBtn = findViewById(R.id.startWalk);
             setGoal = findViewById(R.id.newGoal);
+            add500 = findViewById(R.id.add500);
 
             // goal congratulation objects
             congratsMessage = new Congratulations(this);
@@ -141,6 +142,13 @@ public class MainActivity extends AppCompatActivity {
                     setCustomGoal.show();
                 }
             });
+            add500.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    totalSteps += 500;
+                    setStepCount(totalSteps);
+                }
+            });
 
             fitBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -156,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                         start = false;
                         fitBtn.setText(" Start walk/run ");
                         fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
-
+                        Toast.makeText(MainActivity.this, "Good Job!", Toast.LENGTH_SHORT).show();
                         totalActiveSteps = prefs.getInt(ACTIVE_KEY, 0);
                         totalActiveSteps += activeSteps;
                         editor.putInt(ACTIVE_KEY, totalActiveSteps);

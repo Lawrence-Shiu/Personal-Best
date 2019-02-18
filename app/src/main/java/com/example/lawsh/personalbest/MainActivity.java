@@ -75,7 +75,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         prefs = getSharedPreferences("PB", Context.MODE_PRIVATE);
+
         editor = prefs.edit();
         sdf= new SimpleDateFormat("EEEE");
         Date d = new Date();

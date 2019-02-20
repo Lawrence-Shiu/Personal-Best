@@ -134,9 +134,19 @@ public class MainActivity extends AppCompatActivity {
             // create google fit adapter
             fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-            // async runner to constantly update steps
-            UpdateAsyncPassiveCount passiveRunner = new UpdateAsyncPassiveCount();
-            passiveRunner.execute();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // async runner to constantly update steps
+                            UpdateAsyncPassiveCount passiveRunner = new UpdateAsyncPassiveCount();
+                            passiveRunner.execute();
+                        }
+                    });
+                }
+            });
 
             setGoal.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -7,7 +7,6 @@ import com.example.lawsh.personalbest.MainActivity;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class FitnessServiceFactory {
 
     private static final String TAG = "[FitnessServiceFactory]";

@@ -67,134 +67,125 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog goalReached;
     private String oldDay;
 
-
     public boolean testing = false;
     String dayOfTheWeek;
     private FitnessService fitnessService;
     SharedPreferences prefs;
     SharedPreferences.Editor editor;
     SimpleDateFormat sdf;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //grabbing and instantiating shared preferences
         prefs = getSharedPreferences("PB", Context.MODE_PRIVATE);
-
         editor = prefs.edit();
-        sdf= new SimpleDateFormat("EEEE");
+        sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
         dayOfTheWeek = sdf.format(d);
+
         // go to set up screen
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
         startActivity(setup);
 
+        // In the meantime, set up own UI
         mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        if(!testing) {
+        // set goal text
+        goalText = findViewById(R.id.goalText);
+        int goal = prefs.getInt("goal", 5000);
+        goalText.setText("Goal: " + goal + " steps");
 
-            // set goal text
-            goalText = findViewById(R.id.goalText);
-            int goal = prefs.getInt("goal", 5000);
-            goalText.setText("Goal: " + goal + " steps");
+        // set step count text
+        textSteps = findViewById(R.id.textSteps);
+        int steps = prefs.getInt(PASSIVE_KEY, 0);
+        textSteps.setText(Integer.toString(steps));
 
-            // set step count text
-            textSteps = findViewById(R.id.textSteps);
-            int steps = prefs.getInt(PASSIVE_KEY, 0);
-            textSteps.setText(Integer.toString(steps));
+        // set active step count text
+        activeText = findViewById(R.id.activeText);
+        activeSteps = prefs.getInt(ACTIVE_KEY, 0);
+        activeText.setText("Active Steps: " + Integer.toString(activeSteps));
 
-            // set active step count text
-            activeText = findViewById(R.id.activeText);
-            activeSteps = prefs.getInt(ACTIVE_KEY, 0);
-            activeText.setText("Active Steps: " + Integer.toString(activeSteps));
+        // find buttons and velocity text
+        velocity = findViewById(R.id.velocity);
+        fitBtn = findViewById(R.id.startWalk);
+        setGoal = findViewById(R.id.newGoal);
+        add500 = findViewById(R.id.add500);
 
-            // find buttons and velocity text
-            velocity = findViewById(R.id.velocity);
-            fitBtn = findViewById(R.id.startWalk);
-            setGoal = findViewById(R.id.newGoal);
-            add500 = findViewById(R.id.add500);
+        // goal congratulation objects
+        congratsMessage = new Congratulations(this);
+        goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
 
-            // goal congratulation objects
-            congratsMessage = new Congratulations(this);
-            goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
+        //set subgoal
+        subGoal = ((totalSteps/500)+1)*500;
 
-            //set subgoal
-            subGoal = ((totalSteps/500)+1)*500;
+        // reset active steps for each day
+        resetActiveSteps();
 
-            // reset active steps for each day
-            resetActiveSteps();
+        FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
+            @Override
+            public FitnessService create(MainActivity mainActivity) {
+                return new GoogleFitAdapter(mainActivity);
+            }
+        });
+        // create google fit adapter
+        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-            FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
-                @Override
-                public FitnessService create(MainActivity mainActivity) {
-                    return new GoogleFitAdapter(mainActivity);
-                }
-            });
-            // create google fit adapter
-            fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            // async runner to constantly update steps
-                            UpdateAsyncPassiveCount passiveRunner = new UpdateAsyncPassiveCount();
-                            passiveRunner.execute();
-                        }
-                    });
-                }
-            });
-
-            setGoal.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog setCustomGoal =  congratsMessage.onCreateCustomGoal(savedInstanceState);
-                    setCustomGoal.show();
-                }
-            });
-            add500.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setStepCount(totalSteps+=500);
-                }
-            });
-
-            fitBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (start == false) {
-                        start = true;
-                        fitBtn.setText(" End walk/run ");
-                        fitBtn.setBackgroundColor(Color.parseColor("#FFF50410"));
-                        counter = totalSteps;
-                        timeCounter = System.nanoTime();
-
-                    } else {
-                        start = false;
-                        fitBtn.setText(" Start walk/run ");
-                        fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
-                        Toast.makeText(MainActivity.this, "Good Job!", Toast.LENGTH_SHORT).show();
-                        totalActiveSteps = prefs.getInt(ACTIVE_KEY, 0);
-                        totalActiveSteps += activeSteps;
-                        editor.putInt(ACTIVE_KEY, totalActiveSteps);
-                        editor.apply();
-
-
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // async runner to constantly update steps
+                        UpdateAsyncPassiveCount passiveRunner = new UpdateAsyncPassiveCount();
+                        passiveRunner.execute();
                     }
+                });
+            }
+        });
+
+        setGoal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog setCustomGoal =  congratsMessage.onCreateCustomGoal(savedInstanceState);
+                setCustomGoal.show();
+            }
+        });
+        add500.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setStepCount(totalSteps += 250);
+            }
+        });
+
+        fitBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (start == false) {
+                    start = true;
+                    fitBtn.setText(" End walk/run ");
+                    fitBtn.setBackgroundColor(Color.parseColor("#FFF50410"));
+                    counter = totalSteps;
+                    timeCounter = System.nanoTime();
+                } else {
+                    start = false;
+                    fitBtn.setText(" Start walk/run ");
+                    fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
+                    Toast.makeText(MainActivity.this, "Good Job!", Toast.LENGTH_SHORT).show();
+                    totalActiveSteps = prefs.getInt(ACTIVE_KEY, 0);
+                    totalActiveSteps += activeSteps;
+                    editor.putInt(ACTIVE_KEY, totalActiveSteps);
+                    editor.apply();
                 }
-            });
-            fitnessService.setup();
-        }
+            }
+        });
+        fitnessService.setup();
     }
 
-    /*
-    public void setFitnessServiceKey(String fitnessServiceKey) {
-        this.fitnessServiceKey = fitnessServiceKey;
-    }
-    */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -219,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
             for(int i = 0; i < active_steps.length; i++){
                 active_steps[i] = prefs.getInt(dayArray[i]+"Active",0);
                 passive_steps[i] = prefs.getInt(dayArray[i]+"Passive",0);
-
             }
 
             prog.putExtra("ACTIVE_STEPS", active_steps);
@@ -227,19 +217,28 @@ public class MainActivity extends AppCompatActivity {
             prog.putExtra("CURRENT_GOAL", prefs.getInt("goal", 5000));
             startActivity(prog);
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     public void setStepCount(long stepCount) {
-        if(oldTotal != totalSteps) {
-            textSteps.setText(String.valueOf(stepCount));
-            totalSteps = (int) stepCount;
-            editor.putInt(PASSIVE_KEY, totalSteps);
-            editor.apply();
-            setActiveSteps();
-            updateWeek();
-            oldTotal = totalSteps;
+        checkGoalReached();
+        textSteps.setText(String.valueOf(stepCount));
+        totalSteps = (int) stepCount;
+        editor.putInt(PASSIVE_KEY, totalSteps);
+        editor.apply();
+        setActiveSteps();
+        updateWeek();
+    }
+
+    public void checkGoalReached() {
+        int goal = prefs.getInt("goal", 5000);
+        if(totalSteps >= goal) {
+            goalMessageFirstAppearance = false;
+            goalReached.show();
+        }
+        if(totalSteps >= subGoal && totalSteps < goal){
+            Toast.makeText(MainActivity.this, "You’ve increased your daily steps by over 500 steps. Keep up the good work!", Toast.LENGTH_LONG).show();
+            subGoal = ((totalSteps/500)+1)*500;
         }
     }
 
@@ -254,22 +253,29 @@ public class MainActivity extends AppCompatActivity {
             activeSteps = totalSteps - counter;
 
             if(oldActive != activeSteps) {
-                String printTotal = "Active Steps: " + Integer.toString(prefs.getInt(ACTIVE_KEY, 0) + activeSteps);
-                double stride = prefs.getInt("height", 0) *.413/12/5280;
-                System.out.println(stride);
-                activeText.setText(printTotal);
-
-                double timeElapsed = ((double) System.nanoTime() - timeCounter) / 1000000000.0/60/60;
-                double mph = activeSteps*stride / timeElapsed;
-
-                mph *= 1000;
-                mph = (int)mph;
-                mph = mph/1000;
-
-                velocity.setText(mph + " MPH");
-                oldActive = activeSteps;
+                showSpeedOfRun();
             }
         }
+    }
+
+    public void showSpeedOfRun() {
+        String printTotal = "Active Steps: " + Integer.toString(prefs.getInt(ACTIVE_KEY, 0) + activeSteps);
+        activeText.setText(printTotal);
+        double mph = calculateMPH(activeSteps);
+
+        velocity.setText(mph + " MPH");
+        oldActive = activeSteps;
+    }
+
+    public double calculateMPH(int numOfSteps) {
+        double stride = prefs.getInt("height", 0) * .413 / 12 / 5280; //mystical conversion factor
+        System.out.println(stride);
+        double timeElapsed = ((double) System.nanoTime() - timeCounter) / 1000000000.0 / 60 / 60; //another mystical conversion factor
+        double mph = activeSteps * stride / timeElapsed;
+
+        mph *= 1000;
+        Math.round(mph);
+        return mph / 1000;
     }
 
     public void resetActiveSteps(){
@@ -282,16 +288,13 @@ public class MainActivity extends AppCompatActivity {
 
             editor.apply();
         }
-
     }
 
-
-    private class UpdateAsyncPassiveCount extends AsyncTask<String, String, String> {
+    public class UpdateAsyncPassiveCount extends AsyncTask<String, String, String> {
         private String resp;
         @Override
         protected String doInBackground(String... params){
             try {
-
                 while(true) {
                     fitnessService.updateStepCount();
                     if(goalMessageFirstAppearance == true){
@@ -303,14 +306,12 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-
             }
             catch (Exception e) {
                 e.printStackTrace();
                 resp = e.getMessage();
             }
             return resp;
-
         }
         @Override
         protected void onPostExecute(String result){ }
@@ -319,21 +320,12 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute(){  }
 
         @Override
-        protected void onProgressUpdate(String... text){
-            int goal = prefs.getInt("goal", 5000);
-            if(totalSteps >= goal) {
-                goalMessageFirstAppearance = false;
-                goalReached.show();
-            }
-            if(totalSteps >= subGoal && totalSteps < goal){
-                Toast.makeText(MainActivity.this, "You’ve increased your daily steps by over 500 steps. Keep up the good work!", Toast.LENGTH_LONG).show();
-                subGoal = ((totalSteps/500)+1)*500;
-            }
+        protected void onProgressUpdate(String... text) {
         }
     }
 
 
-    private class Congratulations implements Observer {
+    public class Congratulations implements Observer {
 
         Activity activity;
 
@@ -465,7 +457,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void saveCustomGoal(View v) {
         goal = (EditText)v.findViewById(R.id.custom_goal);
-
         editor.putInt("goal",Integer.parseInt(goal.getText().toString()));
         editor.apply();
         int stepsGoal = Integer.parseInt(goal.getText().toString());
@@ -473,5 +464,4 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
         goalMessageFirstAppearance = true;
     }
-
 }

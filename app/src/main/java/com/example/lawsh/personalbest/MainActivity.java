@@ -118,8 +118,6 @@ public class MainActivity extends AppCompatActivity {
         congratsMessage = new Congratulations(this);
         goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
             public FitnessService create(MainActivity mainActivity) {

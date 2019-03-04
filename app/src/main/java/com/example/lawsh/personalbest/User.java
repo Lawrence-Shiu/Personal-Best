@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 public class User {
     private int height; //in inches
     private int stepsTaken;
+    private int totalActiveSteps;
     private int currentGoal;
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
@@ -44,8 +45,16 @@ public class User {
         return stepsTaken;
     }
 
-    public void setPassiveSteps (int newSteps) {
-        stepsTaken = newSteps;
-        editor.putInt(PASSIVE_KEY, this.stepsTaken).apply();
+    public void setSteps (long newSteps) {
+        stepsTaken = (int) newSteps;
+        editor.putInt(PASSIVE_KEY, stepsTaken);
+        editor.apply();
+    }
+
+    public void addActiveSteps(int newActiveSteps) {
+        totalActiveSteps = pref.getInt(ACTIVE_KEY, 0);
+        totalActiveSteps += newActiveSteps;
+        editor.putInt(ACTIVE_KEY, totalActiveSteps);
+        editor.apply();
     }
 }

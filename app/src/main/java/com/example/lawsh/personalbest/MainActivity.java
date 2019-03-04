@@ -161,12 +161,8 @@ public class MainActivity extends AppCompatActivity {
                     fitBtn.setText(" Start walk/run ");
                     fitBtn.setBackgroundColor(Color.parseColor("#10f504"));
                     Toast.makeText(MainActivity.this, "Good Job!", Toast.LENGTH_SHORT).show();
-                    totalActiveSteps = prefs.getInt(ACTIVE_KEY, 0);
-                    totalActiveSteps += activeSteps;
-                    editor.putInt(ACTIVE_KEY, totalActiveSteps);
-                    editor.apply();
 
-
+                    user.addActiveSteps(activeSteps);
                 }
             }
         });
@@ -208,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
             prog.putExtra("ACTIVE_STEPS", active_steps);
             prog.putExtra("PASSIVE_STEPS", passive_steps);
             prog.putExtra("CURRENT_GOAL", prefs.getInt("goal", 5000));
-            startActivityForResult(prog, REQ_CODE);
+            startActivity(prog);
         }
 
         return super.onOptionsItemSelected(item);
@@ -253,6 +249,7 @@ public class MainActivity extends AppCompatActivity {
         goalText.setText("Goal: " + goal + " steps");
         textSteps.setText(Integer.toString(steps));
         activeText.setText("Active Steps: " + Integer.toString(activeSteps));
+        totalSteps = user.getSteps();
 
         subGoal = ((totalSteps/500)+1)*500;
     }
@@ -260,12 +257,24 @@ public class MainActivity extends AppCompatActivity {
     public void setStepCount(long stepCount) {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
-            totalSteps = (int) stepCount;
-            editor.putInt(PASSIVE_KEY, totalSteps);
-            editor.apply();
+            user.setSteps(stepCount);
             setActiveSteps();
             updateWeek();
             oldTotal = totalSteps;
+
+            checkGoal();
+        }
+    }
+
+    public void checkGoal() {
+        int goal = user.getCurrentGoal();
+        if(totalSteps >= goal) {
+            goalMessageFirstAppearance = false;
+            goalReached.show();
+        }
+        if(totalSteps >= subGoal && totalSteps < goal){
+            Toast.makeText(MainActivity.this, "You’ve increased your daily steps by over 500 steps. Keep up the good work!", Toast.LENGTH_LONG).show();
+            subGoal = ((totalSteps/500)+1)*500;
         }
     }
 
@@ -286,16 +295,21 @@ public class MainActivity extends AppCompatActivity {
                 activeText.setText(printTotal);
 
                 double timeElapsed = ((double) System.nanoTime() - timeCounter) / 1000000000.0/60/60;
-                double mph = activeSteps*stride / timeElapsed;
 
-                mph *= 1000;
-                mph = (int)mph;
-                mph = mph/1000;
-
-                velocity.setText(mph + " MPH");
+                velocity.setText(calculateSpeed(stride, timeElapsed) + " MPH");
                 oldActive = activeSteps;
             }
         }
+    }
+
+    public double calculateSpeed(double stride, double timeElapsed) {
+        double mph = activeSteps*stride / timeElapsed;
+
+        mph *= 1000;
+        mph = (int)mph;
+        mph = mph/1000;
+
+        return mph;
     }
 
     public void resetActiveSteps(){
@@ -308,7 +322,6 @@ public class MainActivity extends AppCompatActivity {
 
             editor.apply();
         }
-
     }
 
 

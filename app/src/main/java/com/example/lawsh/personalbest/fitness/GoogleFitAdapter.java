@@ -50,6 +50,7 @@ public class GoogleFitAdapter implements FitnessService {
 
     private void startRecording() {
         GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        Log.d("USER_ID_CHECK", lastSignedInAccount.getId());
         if (lastSignedInAccount == null) {
             return;
         }

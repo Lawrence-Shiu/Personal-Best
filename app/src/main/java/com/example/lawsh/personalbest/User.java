@@ -1,8 +1,13 @@
 package com.example.lawsh.personalbest;
 
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class User {
+    private String id;
     private int height; //in inches
     private int stepsTaken;
     private int totalActiveSteps;
@@ -15,12 +20,18 @@ public class User {
 
     //other functionality?
 
-    public User(int height, int currentGoal, int stepsTaken, SharedPreferences pref) {
+    public User(String id, int height, int currentGoal, int stepsTaken, SharedPreferences pref) {
+        this.id = id;
         this.height = height;
         this.currentGoal = currentGoal;
         this.stepsTaken = stepsTaken;
         this.pref = pref;
         this.editor = pref.edit();
+    }
+
+    public void setId(String id) {
+        this.id = id;
+        Log.d("USER_ID", id);
     }
 
     public int getHeight() {
@@ -56,5 +67,16 @@ public class User {
         totalActiveSteps += newActiveSteps;
         editor.putInt(ACTIVE_KEY, totalActiveSteps);
         editor.apply();
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("id", id);
+        map.put("height", height);
+        map.put("stepsTaken", stepsTaken);
+        map.put("currentGoal", currentGoal);
+        map.put("activeSteps", totalActiveSteps);
+
+        return map;
     }
 }

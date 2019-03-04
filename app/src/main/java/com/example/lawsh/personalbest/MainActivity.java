@@ -70,7 +70,8 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog goalReached;
     private String oldDay;
 
-    int REQ_CODE = 104;
+    public static int REQ_CODE = 233;
+    UpdateAsyncPassiveCount passiveRunner;
 
     public boolean testing = false;
     String dayOfTheWeek;
@@ -86,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
         prefs = getSharedPreferences("PB", Context.MODE_PRIVATE);
         editor = prefs.edit();
 
+        initializeUser();
+
         //Get the date
         sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
@@ -93,8 +96,9 @@ public class MainActivity extends AppCompatActivity {
 
         // go to set up screen
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
-        startActivity(setup);
+        startActivityForResult(setup, REQ_CODE);
 
+        // Defines UI elements by resource id
         mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
@@ -126,10 +130,6 @@ public class MainActivity extends AppCompatActivity {
         });
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
-
-        // async runner to constantly update steps
-        UpdateAsyncPassiveCount passiveRunner = new UpdateAsyncPassiveCount();
-        passiveRunner.execute();
 
         //Set on click listeners for various buttons on main activity
         setGoal.setOnClickListener(new View.OnClickListener() {
@@ -216,10 +216,25 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
                 initializeUser();
                 initializeUiValues();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // async runner to constantly update steps
+                                passiveRunner = new UpdateAsyncPassiveCount();
+                                passiveRunner.execute();
+                            }
+                        });
+                    }
+                });
             }
         }
     }

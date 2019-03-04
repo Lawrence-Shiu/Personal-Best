@@ -9,12 +9,14 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsInstanceOf;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 
@@ -30,6 +32,12 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.UiObject;
+import androidx.test.uiautomator.UiObjectNotFoundException;
+import androidx.test.uiautomator.UiSelector;
+import androidx.test.uiautomator.Until;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -38,8 +46,23 @@ public class Test1 {
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class);
 
+    private UiDevice mDevice;
+
+    @Before
+    public void startMainActivity() {
+        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+    }
+
+
     @Test
     public void test1() {
+        UiObject mText = mDevice.findObject(new UiSelector().text("@gmail.com"));
+        try {
+            mText.click();
+        } catch(UiObjectNotFoundException e) {
+            e.printStackTrace();
+        }
+
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.feet_input),
                         childAtPosition(

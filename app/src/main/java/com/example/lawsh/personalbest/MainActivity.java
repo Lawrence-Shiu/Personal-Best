@@ -1,12 +1,15 @@
 package com.example.lawsh.personalbest;
 
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.support.v7.app.AlertDialog;
@@ -66,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private Congratulations congratsMessage;
     private AlertDialog goalReached;
     private String oldDay;
-
+    private GoalToPushAdapter goalNote;
+    private GoalToPushAdapter subGoalNote;
 
     public boolean testing = false;
     String dayOfTheWeek;
@@ -88,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
         // go to set up screen
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
         startActivity(setup);
+        createNotificationChannel();
 
         mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -118,6 +123,8 @@ public class MainActivity extends AppCompatActivity {
             // goal congratulation objects
             congratsMessage = new Congratulations(this);
             goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
+            goalNote = new GoalToPushAdapter("Goal Reached", "Congratulations! You reached your goal", congratsMessage);
+            subGoalNote = new GoalToPushAdapter("Sub Goal", "You’ve increased your daily steps by over 500 steps. Keep up the good work!", congratsMessage);
 
             //set subgoal
             subGoal = ((totalSteps/500)+1)*500;
@@ -275,6 +282,22 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void createNotificationChannel() {
+
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Goal Channel";
+            String description = "Goal Channel Description";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("0", name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
 
     private class UpdateAsyncPassiveCount extends AsyncTask<String, String, String> {
         private String resp;
@@ -314,16 +337,18 @@ public class MainActivity extends AppCompatActivity {
             if(totalSteps >= goal) {
                 goalMessageFirstAppearance = false;
                 goalReached.show();
+                goalNote.show();
             }
             if(totalSteps >= subGoal && totalSteps < goal){
                 Toast.makeText(MainActivity.this, "You’ve increased your daily steps by over 500 steps. Keep up the good work!", Toast.LENGTH_LONG).show();
                 subGoal = ((totalSteps/500)+1)*500;
+                subGoalNote.show();
             }
         }
     }
 
 
-    private class Congratulations implements Observer {
+    public class Congratulations implements Observer {
 
         Activity activity;
 

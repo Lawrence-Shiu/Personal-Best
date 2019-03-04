@@ -25,7 +25,7 @@ public class SetupTest {
 
     @Before
     public void setup() {
-        pref.edit().remove("height");
+        pref.edit().remove("height").apply();
         setupActivity = Robolectric.setupActivity(SetupActivity.class);
         feetText = setupActivity.findViewById(R.id.feet_input);
         inchesText = setupActivity.findViewById(R.id.in_input);

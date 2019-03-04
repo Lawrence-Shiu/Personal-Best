@@ -20,6 +20,7 @@ public class SetupActivity extends AppCompatActivity {
         final SharedPreferences preferences = getSharedPreferences("PB", MODE_PRIVATE);
 
         if (preferences.getInt("height", 0) != 0) {
+            setResult(RESULT_OK);
             finish();
         }
 
@@ -47,6 +48,7 @@ public class SetupActivity extends AppCompatActivity {
                 }
 
                 heightInInches = feet * 12 + inches;
+                setResult(RESULT_OK);
                 edit.putInt("height", heightInInches);
                 edit.apply();
                 finish();

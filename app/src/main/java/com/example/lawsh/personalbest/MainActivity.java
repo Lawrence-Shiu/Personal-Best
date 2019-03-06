@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -25,7 +26,16 @@ import android.widget.Toast;
 import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.data.DataBufferObserver;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DecimalFormat;
@@ -71,14 +81,21 @@ public class MainActivity extends AppCompatActivity {
     private String oldDay;
 
     public static int REQ_CODE = 233;
-    UpdateAsyncPassiveCount passiveRunner;
+    private UpdateAsyncPassiveCount passiveRunner;
 
-    public boolean testing = false;
-    String dayOfTheWeek;
+    private FirebaseFirestore acctFirebase;
+    private CollectionReference acctCollection;
+    private GoogleSignInAccount gsa;
+
+    private String dayOfTheWeek;
     private FitnessService fitnessService;
-    SharedPreferences prefs;
-    SharedPreferences.Editor editor;
-    SimpleDateFormat sdf;
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor editor;
+    private SimpleDateFormat sdf;
+    private String id;
+    private GoogleSignInOptions gso;
+    private GoogleSignInClient gsc;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +103,35 @@ public class MainActivity extends AppCompatActivity {
 
         prefs = getSharedPreferences("PB", Context.MODE_PRIVATE);
         editor = prefs.edit();
+
+        FirebaseApp.initializeApp(MainActivity.this);
+        acctFirebase = FirebaseFirestore.getInstance();
+        acctCollection = acctFirebase.collection("users");
+
+        FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
+            @Override
+            public FitnessService create(MainActivity mainActivity) {
+                return new GoogleFitAdapter(mainActivity);
+            }
+        });
+        // create google fit adapter
+        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestId()
+                .requestEmail()
+                .build();
+        gsc = GoogleSignIn.getClient(this, gso);
+        gsa = GoogleSignIn.getLastSignedInAccount(this);
+
+        id = gsa.getId();
+        if(GoogleSignIn.getLastSignedInAccount(MainActivity.this) == null) {
+            Log.d("NULL_USER", "Null user");
+        } else if(id == null) {
+            Log.d("USER_ID_CHECK", "Null ID");
+        } else {
+            Log.d("USER_ID_CHECK", "Not null ID");
+        }
 
         initializeUser();
 
@@ -122,15 +168,6 @@ public class MainActivity extends AppCompatActivity {
         congratsMessage = new Congratulations(this);
         goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
 
-        FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new GoogleFitAdapter(mainActivity);
-            }
-        });
-        // create google fit adapter
-        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
-
         //Set on click listeners for various buttons on main activity
         setGoal.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 setStepCount(totalSteps+=500);
+                Log.d("USER_ID_CHECK", id);
             }
         });
 
@@ -216,22 +254,23 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
                 initializeUser();
-                initializeUiValues();
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                // async runner to constantly update steps
-                                passiveRunner = new UpdateAsyncPassiveCount();
-                                passiveRunner.execute();
-                            }
-                        });
-                    }
-                });
             }
+            initializeUiValues();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // async runner to constantly update steps
+                            passiveRunner = new UpdateAsyncPassiveCount();
+                            passiveRunner.execute();
+                        }
+                    });
+                }
+            });
         }
     }
 
@@ -240,7 +279,12 @@ public class MainActivity extends AppCompatActivity {
         int height = prefs.getInt("height", 0);
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
-        user = new User(height, currentGoal, currentSteps, prefs);
+
+        id = gsa.getId();
+        Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
+        user = new User(id, height, currentGoal, currentSteps, prefs);
+
+        updateDatabase();
     }
 
     public void initializeUiValues() {
@@ -254,15 +298,32 @@ public class MainActivity extends AppCompatActivity {
         subGoal = ((totalSteps/500)+1)*500;
     }
 
+    public void updateDatabase() {
+        acctFirebase.collection("users").document("user_" + id).set(user.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Firebase", "DocumentSnapshot successfully written!");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
+    }
+
     public void setStepCount(long stepCount) {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
             user.setSteps(stepCount);
+            updateDatabase();
             setActiveSteps();
             updateWeek();
             oldTotal = totalSteps;
 
-            checkGoal();
+            if(goalMessageFirstAppearance == true) {
+                checkGoal();
+            }
         }
     }
 
@@ -495,21 +556,26 @@ public class MainActivity extends AppCompatActivity {
 
     public void saveDefaultGoal() {
         int goal = prefs.getInt("goal", 5000);///////////////////////////
-        goalText.setText("Goal: " + (goal + 500) + " steps");
-        user.setGoal(goal+500);
-        Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
-        goalMessageFirstAppearance = true;
+        changeGoal(goal+500);
+
     }
 
     public void saveCustomGoal(View v) {
         goal = (EditText)v.findViewById(R.id.custom_goal);
-        user.setGoal(Integer.parseInt(goal.getText().toString()));
-        editor.putInt("goal",Integer.parseInt(goal.getText().toString()));
-        editor.apply();
         int stepsGoal = Integer.parseInt(goal.getText().toString());
-        goalText.setText("Goal: " + stepsGoal + " steps");
-        Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
+        changeGoal(stepsGoal);
+    }
+
+    public void changeGoal(int newGoal) {
+        goalText.setText("Goal: " + newGoal + " steps");
+        user.setGoal(newGoal);
         goalMessageFirstAppearance = true;
+        notifyGoalChanged();
+    }
+
+    public void notifyGoalChanged() {
+        Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
+        updateDatabase();
     }
 
 }

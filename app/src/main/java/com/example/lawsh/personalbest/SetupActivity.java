@@ -20,7 +20,7 @@ public class SetupActivity extends AppCompatActivity {
         final SharedPreferences preferences = getSharedPreferences("PB", MODE_PRIVATE);
 
         if (preferences.getInt("height", 0) != 0) {
-            setResult(RESULT_OK);
+            setResult(RESULT_CANCELED);
             finish();
         }
 

@@ -26,14 +26,25 @@ import android.widget.Toast;
 import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.data.DataBufferObserver;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -51,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
     private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    public static final int REQ_CODE = 233;
+    public static final int RC_SIGN_IN = 1;
 
     //private static final String TAG = "mainActivity";
 
@@ -80,12 +93,12 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog goalReached;
     private String oldDay;
 
-    public static int REQ_CODE = 233;
     private UpdateAsyncPassiveCount passiveRunner;
 
     private FirebaseFirestore acctFirebase;
     private CollectionReference acctCollection;
     private GoogleSignInAccount gsa;
+    private GoogleApiClient mGoogleApiClient;
 
     private String dayOfTheWeek;
     private FitnessService fitnessService;
@@ -95,6 +108,16 @@ public class MainActivity extends AppCompatActivity {
     private String id;
     private GoogleSignInOptions gso;
     private GoogleSignInClient gsc;
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //check if user is signed in
+        currentUser = mAuth.getCurrentUser();
+    }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -108,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
         acctFirebase = FirebaseFirestore.getInstance();
         acctCollection = acctFirebase.collection("users");
 
+        mAuth = FirebaseAuth.getInstance();
+
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
             public FitnessService create(MainActivity mainActivity) {
@@ -118,19 +143,25 @@ public class MainActivity extends AppCompatActivity {
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestId()
+                .requestIdToken(getString(R.string.default_web_client_id)) //don't worry about this "error"
                 .requestEmail()
+                .requestId()
                 .build();
         gsc = GoogleSignIn.getClient(this, gso);
         gsa = GoogleSignIn.getLastSignedInAccount(this);
 
-        id = gsa.getId();
-        if(GoogleSignIn.getLastSignedInAccount(MainActivity.this) == null) {
-            Log.d("NULL_USER", "Null user");
-        } else if(id == null) {
-            Log.d("USER_ID_CHECK", "Null ID");
-        } else {
-            Log.d("USER_ID_CHECK", "Not null ID");
+        mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult connectionResult) {
+                        Log.d("MainActivity", "Connection Failed");
+                    }
+                })
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        if(currentUser == null) {
+            signIn();
         }
 
         initializeUser();
@@ -207,6 +238,11 @@ public class MainActivity extends AppCompatActivity {
         fitnessService.setup();
     }
 
+    private void signIn() {
+        Intent signInIntent = gsc.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
     /*
     public void setFitnessServiceKey(String fitnessServiceKey) {
         this.fitnessServiceKey = fitnessServiceKey;
@@ -271,7 +307,30 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             });
+        } else if(requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                firebaseAuthWithGoogle(account);
+            } catch (ApiException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser currentUser = mAuth.getCurrentUser();
+                        } else {
+                            Log.d("MainActivity", "Auth failed");
+                        }
+                    }
+                });
     }
 
     public void initializeUser() {
@@ -282,7 +341,7 @@ public class MainActivity extends AppCompatActivity {
 
         id = gsa.getId();
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
-        user = new User(id, height, currentGoal, currentSteps, prefs);
+        user = new User(gsa.getId(), gsa.getEmail(), height, currentGoal, currentSteps, prefs);
 
         updateDatabase();
     }

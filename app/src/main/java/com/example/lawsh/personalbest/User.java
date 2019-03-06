@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class User {
     private String id;
+    private String email;
     private int height; //in inches
     private int stepsTaken;
     private int totalActiveSteps;
@@ -20,8 +21,9 @@ public class User {
 
     //other functionality?
 
-    public User(String id, int height, int currentGoal, int stepsTaken, SharedPreferences pref) {
+    public User(String id, String email, int height, int currentGoal, int stepsTaken, SharedPreferences pref) {
         this.id = id;
+        this.email = email;
         this.height = height;
         this.currentGoal = currentGoal;
         this.stepsTaken = stepsTaken;
@@ -72,6 +74,7 @@ public class User {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("id", id);
+        map.put("email", email);
         map.put("height", height);
         map.put("stepsTaken", stepsTaken);
         map.put("currentGoal", currentGoal);

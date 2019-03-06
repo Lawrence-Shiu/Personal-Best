@@ -126,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
         // goal congratulation objects
         congratsMessage = new Congratulations(this);
         goalReached = congratsMessage.onCreateAskGoal(savedInstanceState);
+        goalNote = new GoalToPushAdapter("Goal Reached", "Congratulations! You reached your goal", congratsMessage);
+        subGoalNote = new GoalToPushAdapter("Sub Goal", "You’ve increased your daily steps by over 500 steps. Keep up the good work!", congratsMessage);
 
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
@@ -276,10 +278,12 @@ public class MainActivity extends AppCompatActivity {
         if(totalSteps >= goal) {
             goalMessageFirstAppearance = false;
             goalReached.show();
+            goalNote.show();
         }
         if(totalSteps >= subGoal && totalSteps < goal){
             Toast.makeText(MainActivity.this, "You’ve increased your daily steps by over 500 steps. Keep up the good work!", Toast.LENGTH_LONG).show();
             subGoal = ((totalSteps/500)+1)*500;
+            subGoalNote.show();
         }
     }
 

@@ -1,6 +1,6 @@
 package com.example.lawsh.personalbest;
 
-
+/*
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -40,7 +40,7 @@ public class Test2 {
 
     @Test
     public void test2() {
-        ViewInteraction appCompatEditText = onView(
+       /* ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.feet_input),
                         childAtPosition(
                                 childAtPosition(

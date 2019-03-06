@@ -23,7 +23,8 @@ public class GoalToPushAdapter {
         this.message = message;
         this.goalAlert = goalAlert;
         this.mainActivity = goalAlert.activity;
-        intent = new Intent();
+        intent = new Intent(mainActivity, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         pendingIntent = PendingIntent.getActivity(mainActivity, 0, intent, 0);
 
         builder = new NotificationCompat.Builder(mainActivity, "0")

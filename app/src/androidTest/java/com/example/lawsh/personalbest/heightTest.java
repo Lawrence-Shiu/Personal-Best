@@ -50,18 +50,18 @@ public class heightTest {
 
     @Test
     public void heightTest() {
-        UiObject mText = mDevice.findObject(new UiSelector().text("Jimmy Fu"));
-        try {
+        UiObject mText = mDevice.findObject(new UiSelector().text("@gmail.com"));
+        /*try {
             mText.clickAndWaitForNewWindow();
         } catch(UiObjectNotFoundException e) {
             e.printStackTrace();
         }
-        /*try {
+        try {
             UiObject button = mDevice.findObject(new UiSelector().text("ALLOW"));
             button.clickAndWaitForNewWindow();
         } catch(UiObjectNotFoundException e) {
             e.printStackTrace();
-        }*/
+        }
 
 
         ViewInteraction editText = onView(
@@ -177,6 +177,6 @@ public class heightTest {
                 return parent instanceof ViewGroup && parentMatcher.matches(parent)
                         && view.equals(((ViewGroup) parent).getChildAt(position));
             }
-        };
+        };*/
     }
 }

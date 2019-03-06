@@ -51,7 +51,7 @@ public class height1 {
 
     @Test
     public void height1() {
-
+/*
         UiObject mText = mDevice.findObject(new UiSelector().text("Jimmy Fu"));
         try {
             mText.clickAndWaitForNewWindow();
@@ -63,7 +63,7 @@ public class height1 {
             button.clickAndWaitForNewWindow();
         } catch(UiObjectNotFoundException e) {
             e.printStackTrace();
-        }*/
+        }
 
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.feet_input),
@@ -226,6 +226,6 @@ public class height1 {
                 return parent instanceof ViewGroup && parentMatcher.matches(parent)
                         && view.equals(((ViewGroup) parent).getChildAt(position));
             }
-        };
+        };*/
     }
 }

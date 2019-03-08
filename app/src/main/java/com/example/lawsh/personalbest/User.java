@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +26,16 @@ public class User {
 
     //other functionality?
 
+    //default constructor
+    public User() {
+        this.id = "";
+        this.email = "";
+        this.height = 0;
+        this.currentGoal = 5000;
+        this.stepsTaken = 0;
+        this.friends = new HashSet<String>();
+    }
+
     public User(String id, String email, int height, int currentGoal, int stepsTaken, SharedPreferences pref, Set<String> friends) {
         this.id = id;
         this.email = email;
@@ -36,9 +47,12 @@ public class User {
         this.friends = friends;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public void setId(String id) {
         this.id = id;
-        Log.d("USER_ID", id);
     }
 
     public int getHeight() {
@@ -47,11 +61,6 @@ public class User {
 
     public int getCurrentGoal() {
         return currentGoal;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-        editor.putInt("height", this.height).apply();
     }
 
     public void setGoal(int newGoal) {

@@ -40,6 +40,7 @@ public class Test1 {
 
     @Test
     public void test1() {
+        /*
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.feet_input),
                         childAtPosition(
@@ -370,6 +371,6 @@ public class Test1 {
                 return parent instanceof ViewGroup && parentMatcher.matches(parent)
                         && view.equals(((ViewGroup) parent).getChildAt(position));
             }
-        };
+        };*/
     }
 }

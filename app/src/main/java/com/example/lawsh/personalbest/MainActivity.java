@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
         fitBtn = findViewById(R.id.startWalk);
         setGoal = findViewById(R.id.newGoal);
         add500 = findViewById(R.id.add500);
+        friendBtn = findViewById(R.id.friendButton);
 
         // goal congratulation objects
         congratsMessage = new Congratulations(this);
@@ -228,14 +229,13 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("USER_ID_CHECK", id);
             }
         });
+
         friendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
                 startFriendActivity();
             }
         });
-
-
 
         fitBtn.setOnClickListener(new View.OnClickListener() {
             @Override

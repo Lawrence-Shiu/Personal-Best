@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private Button fitBtn;
     private Button setGoal;
     private Button add500;
+    private Button friendBtn;
     private boolean start = false;
     private TextView textSteps;
     private TextView goalText;
@@ -205,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
         fitBtn = findViewById(R.id.startWalk);
         setGoal = findViewById(R.id.newGoal);
         add500 = findViewById(R.id.add500);
+        friendBtn = findViewById(R.id.friendButton);
 
         // goal congratulation objects
         congratsMessage = new Congratulations(this);
@@ -225,6 +227,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 setStepCount(totalSteps+=500);
                 Log.d("USER_ID_CHECK", id);
+            }
+        });
+
+        friendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                startFriendActivity();
             }
         });
 
@@ -261,6 +270,12 @@ public class MainActivity extends AppCompatActivity {
         this.fitnessServiceKey = fitnessServiceKey;
     }
     */
+
+    public void startFriendActivity(){
+        Intent activity = new Intent(MainActivity.this, FriendActivity.class);
+        startActivity(activity);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

@@ -40,7 +40,9 @@ public class Test3 {
 
     @Test
     public void test3() {
-        /*ViewInteraction appCompatEditText = onView(
+
+        ViewInteraction appCompatEditText = onView(
+
                 allOf(withId(R.id.feet_input),
                         childAtPosition(
                                 childAtPosition(

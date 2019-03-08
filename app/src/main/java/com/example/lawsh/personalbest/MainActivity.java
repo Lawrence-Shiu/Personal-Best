@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
 import com.example.lawsh.personalbest.adapters.AuthenticationAdapter;
+import com.example.lawsh.personalbest.adapters.IDatabase;
 import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
@@ -34,6 +35,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Observable;
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     private UpdateAsyncPassiveCount passiveRunner;
 
-    private FirestoreAdapter acctFirebase;
+    private IDatabase acctFirebase;
     private AuthenticationAdapter authenticationAdapter;
 
     private String dayOfTheWeek;
@@ -90,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
     private SimpleDateFormat sdf;
+    private Date date;
 
     @Override
     public void onStart() {
@@ -121,12 +124,12 @@ public class MainActivity extends AppCompatActivity {
 
         authenticationAdapter = new AuthenticationAdapter(this, getString(R.string.default_web_client_id),this);
 
-        initializeUser();
+        initializeUser(acctFirebase);
 
         //Get the date
         sdf = new SimpleDateFormat("EEEE");
-        Date d = new Date();
-        dayOfTheWeek = sdf.format(d);
+        date = new Date();
+        dayOfTheWeek = sdf.format(date);
 
         // go to set up screen
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
@@ -257,8 +260,8 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
-                initializeUser();
-                                     
+                initializeUser(acctFirebase);
+
             }
             initializeUiValues();
 
@@ -285,18 +288,19 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    public void initializeUser() {
+    public void initializeUser(IDatabase database) {
         resetActiveSteps();
         int height = prefs.getInt("height", 0);
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
+
         Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
 
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
         user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
                 height, currentGoal, currentSteps, prefs, friends);
 
-        acctFirebase.updateDatabase(user);
+        database.updateDatabase(user);
     }
 
     public void initializeUiValues() {

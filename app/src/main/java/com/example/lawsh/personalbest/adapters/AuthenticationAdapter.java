@@ -26,7 +26,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 import static android.provider.Settings.System.getString;
 
-public class AuthenticationAdapter {
+public class AuthenticationAdapter implements IAuth {
 
     private Context context;
 
@@ -98,6 +98,4 @@ public class AuthenticationAdapter {
                     }
                 });
     }
-
-
 }

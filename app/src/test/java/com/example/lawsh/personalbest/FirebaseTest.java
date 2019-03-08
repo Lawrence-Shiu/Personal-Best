@@ -48,15 +48,7 @@ import java.util.Map;
 public class FirebaseTest {
 
     FirestoreAdapter firestoreAdapter;
-    FirebaseFirestore fstore;
-    CollectionReference cRef;
-    DocumentReference dRef;
-    OnSuccessListener osl;
-    OnFailureListener ofl;
-    Task task;
     User testUser;
-    SharedPreferences pref;
-    SharedPreferences.Editor edit;
 
     String userId;
     Map<String, Object> userMap;
@@ -78,7 +70,7 @@ public class FirebaseTest {
         osl = PowerMockito.mock(OnSuccessListener.class, Mockito.RETURNS_DEEP_STUBS);
         ofl = PowerMockito.mock(OnFailureListener.class, Mockito.RETURNS_DEEP_STUBS);*/
 
-        firestoreAdapter = new FirestoreAdapter(fstore);
+        firestoreAdapter = new FirestoreAdapter();
         //Mockito.when(firestoreAdapter).updateDatabase((fstore, testUser)).thenReturn(null);
 
         //firestoreAdapter.updateDatabase(testUser);

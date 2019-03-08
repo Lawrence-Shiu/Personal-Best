@@ -5,18 +5,22 @@ import android.util.Log;
 import com.example.lawsh.personalbest.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class FirestoreAdapter {
+import java.util.ArrayList;
 
-    private FirebaseFirestore fstore;
+public class FirestoreAdapter implements IDatabase {
+
+    private FirebaseFirestore fstoreInstance;
 
     public FirestoreAdapter(FirebaseFirestore fstore) {
-        this.fstore = fstore;
+        this.fstoreInstance = fstore;
     }
 
+    @Override
     public void updateDatabase(User user) {
-        fstore.collection("users").document(user.getId()).set(user.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+        fstoreInstance.collection("users").document(user.getId()).set(user.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("Firebase", "DocumentSnapshot successfully written!");
@@ -29,7 +33,7 @@ public class FirestoreAdapter {
         });
     }
 
-    public FirebaseFirestore getFirestoreInstance() {
-        return fstore;
+    public FirebaseFirestore getCollectionReference() {
+        return fstoreInstance;
     }
 }

@@ -662,6 +662,7 @@ public class MainActivity extends AppCompatActivity {
     public void changeGoal(int newGoal) {
         goalText.setText("Goal: " + newGoal + " steps");
         user.setGoal(newGoal);
+        updateDatabase();
         goalMessageFirstAppearance = true;
         notifyGoalChanged();
     }

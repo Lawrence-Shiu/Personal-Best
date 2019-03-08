@@ -3,8 +3,10 @@ package com.example.lawsh.personalbest;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class User {
     private String id;
@@ -16,12 +18,14 @@ public class User {
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
 
+    private Set<String> friends;
+
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
 
     //other functionality?
 
-    public User(String id, String email, int height, int currentGoal, int stepsTaken, SharedPreferences pref) {
+    public User(String id, String email, int height, int currentGoal, int stepsTaken, SharedPreferences pref, Set<String> friends) {
         this.id = id;
         this.email = email;
         this.height = height;
@@ -29,6 +33,7 @@ public class User {
         this.stepsTaken = stepsTaken;
         this.pref = pref;
         this.editor = pref.edit();
+        this.friends = friends;
     }
 
     public void setId(String id) {
@@ -71,6 +76,15 @@ public class User {
         editor.apply();
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void addFriend(User friend) {
+        friends.add(friend.getEmail());
+        editor.putStringSet("friends", friends).apply();
+    }
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("id", id);
@@ -79,6 +93,7 @@ public class User {
         map.put("stepsTaken", stepsTaken);
         map.put("currentGoal", currentGoal);
         map.put("activeSteps", totalActiveSteps);
+        map.put("friends", friends.toString());
 
         return map;
     }

@@ -57,8 +57,10 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     public static final String FITNESS_SERVICE_KEY = "FITNESS_SERVICE_KEY";
@@ -341,10 +343,11 @@ public class MainActivity extends AppCompatActivity {
         int height = prefs.getInt("height", 0);
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
+        Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
 
         id = gsa.getId();
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
-        user = new User(gsa.getId(), gsa.getEmail(), height, currentGoal, currentSteps, prefs);
+        user = new User(gsa.getId(), gsa.getEmail(), height, currentGoal, currentSteps, prefs, friends);
 
         updateDatabase();
     }

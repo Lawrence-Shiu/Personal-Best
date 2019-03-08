@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private Button fitBtn;
     private Button setGoal;
     private Button add500;
+    private Button friendBtn;
     private boolean start = false;
     private TextView textSteps;
     private TextView goalText;
@@ -227,6 +228,14 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("USER_ID_CHECK", id);
             }
         });
+        friendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                startFriendActivity();
+            }
+        });
+
+
 
         fitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -261,6 +270,12 @@ public class MainActivity extends AppCompatActivity {
         this.fitnessServiceKey = fitnessServiceKey;
     }
     */
+
+    public void startFriendActivity(){
+        Intent activity = new Intent(MainActivity.this, FriendActivity.class);
+        startActivity(activity);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

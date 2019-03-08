@@ -56,7 +56,7 @@ public class Test1 {
 
     @Test
     public void test1() {
-        /*UiObject mText = mDevice.findObject(new UiSelector().text("@gmail.com"));
+        UiObject mText = mDevice.findObject(new UiSelector().text("@gmail.com"));
         try {
             mText.click();
         } catch(UiObjectNotFoundException e) {
@@ -395,5 +395,4 @@ public class Test1 {
             }
         };
     }
-<<<<<<< HEAD
 }*/

@@ -30,13 +30,7 @@ import com.example.lawsh.personalbest.adapters.AuthenticationAdapter;
 import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -88,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     private UpdateAsyncPassiveCount passiveRunner;
 
     private FirestoreAdapter acctFirebase;
-    private AuthenticationAdapter gsiAdapter;
+    private AuthenticationAdapter authenticationAdapter;
 
     private String dayOfTheWeek;
     private FitnessService fitnessService;
@@ -99,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        if(gsiAdapter.getCurrentUser() == null) {
+        if(authenticationAdapter.getCurrentUser() == null) {
             signIn();
         }
     }
@@ -124,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-        gsiAdapter = new AuthenticationAdapter(this, getString(R.string.default_web_client_id),this);
+        authenticationAdapter = new AuthenticationAdapter(this, getString(R.string.default_web_client_id),this);
 
         initializeUser();
 
@@ -267,12 +261,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         } else if(requestCode == RC_SIGN_IN) {
-            gsiAdapter.firebaseAuth(data);
+            authenticationAdapter.firebaseAuth(data);
         }
     }
 
     private void signIn() {
-        Intent signInIntent = gsiAdapter.getGsc().getSignInIntent();
+        Intent signInIntent = authenticationAdapter.getGsc().getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
@@ -284,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
         Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
 
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
-        user = new User( gsiAdapter.getAccount().getId(),  gsiAdapter.getAccount().getEmail(),
+        user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
                 height, currentGoal, currentSteps, prefs, friends);
 
         acctFirebase.updateDatabase(user);

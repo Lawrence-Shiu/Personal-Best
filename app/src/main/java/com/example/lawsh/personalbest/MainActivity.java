@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -28,15 +29,41 @@ import android.widget.Toast;
 import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.data.DataBufferObserver;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.android.gms.common.data.DataBufferObserver;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     public static final String FITNESS_SERVICE_KEY = "FITNESS_SERVICE_KEY";
@@ -44,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
     private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    public static final int REQ_CODE = 233;
+    public static final int RC_SIGN_IN = 1;
 
     //private static final String TAG = "mainActivity";
 
@@ -72,17 +101,35 @@ public class MainActivity extends AppCompatActivity {
     private Congratulations congratsMessage;
     private AlertDialog goalReached;
     private String oldDay;
-    public static int REQ_CODE = 233;
-    UpdateAsyncPassiveCount passiveRunner;
     private GoalToPushAdapter goalNote;
     private GoalToPushAdapter subGoalNote;
 
-    public boolean testing = false;
-    String dayOfTheWeek;
+    private UpdateAsyncPassiveCount passiveRunner;
+
+    private FirebaseFirestore acctFirebase;
+    private CollectionReference acctCollection;
+    private GoogleSignInAccount gsa;
+    private GoogleApiClient mGoogleApiClient;
+
+    private String dayOfTheWeek;
     private FitnessService fitnessService;
-    SharedPreferences prefs;
-    SharedPreferences.Editor editor;
-    SimpleDateFormat sdf;
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor editor;
+    private SimpleDateFormat sdf;
+    private String id;
+    private GoogleSignInOptions gso;
+    private GoogleSignInClient gsc;
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //check if user is signed in
+        currentUser = mAuth.getCurrentUser();
+    }
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +137,42 @@ public class MainActivity extends AppCompatActivity {
 
         prefs = getSharedPreferences("PB", Context.MODE_PRIVATE);
         editor = prefs.edit();
+
+        FirebaseApp.initializeApp(MainActivity.this);
+        acctFirebase = FirebaseFirestore.getInstance();
+        acctCollection = acctFirebase.collection("users");
+
+        mAuth = FirebaseAuth.getInstance();
+        FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
+            @Override
+            public FitnessService create(MainActivity mainActivity) {
+                return new GoogleFitAdapter(mainActivity);
+            }
+        });
+        // create google fit adapter
+        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id)) //don't worry about this "error"
+                .requestEmail()
+                .requestId()
+                .build();
+        gsc = GoogleSignIn.getClient(this, gso);
+        gsa = GoogleSignIn.getLastSignedInAccount(this);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult connectionResult) {
+                        Log.d("MainActivity", "Connection Failed");
+                    }
+                })
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        if(currentUser == null) {
+            signIn();
+        }
 
         initializeUser();
 
@@ -129,15 +212,6 @@ public class MainActivity extends AppCompatActivity {
         goalNote = new GoalToPushAdapter("Goal Reached", "Congratulations! You reached your goal", congratsMessage);
         subGoalNote = new GoalToPushAdapter("Sub Goal", "You’ve increased your daily steps by over 500 steps. Keep up the good work!", congratsMessage);
 
-        FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
-            @Override
-            public FitnessService create(MainActivity mainActivity) {
-                return new GoogleFitAdapter(mainActivity);
-            }
-        });
-        // create google fit adapter
-        fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
-
         //Set on click listeners for various buttons on main activity
         setGoal.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 setStepCount(totalSteps+=500);
+                Log.d("USER_ID_CHECK", id);
             }
         });
 
@@ -174,6 +249,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         fitnessService.setup();
+    }
+
+    private void signIn() {
+        Intent signInIntent = gsc.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     /*
@@ -223,23 +303,47 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
                 initializeUser();
-                initializeUiValues();
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                // async runner to constantly update steps
-                                passiveRunner = new UpdateAsyncPassiveCount();
-                                passiveRunner.execute();
-                            }
-                        });
-                    }
-                });
+            }
+            initializeUiValues();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // async runner to constantly update steps
+                            passiveRunner = new UpdateAsyncPassiveCount();
+                            passiveRunner.execute();
+                        }
+                    });
+                }
+            });
+        } else if(requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                firebaseAuthWithGoogle(account);
+            } catch (ApiException e) {
+                e.printStackTrace();
             }
         }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser currentUser = mAuth.getCurrentUser();
+                        } else {
+                            Log.d("MainActivity", "Auth failed");
+                        }
+                    }
+                });
     }
 
     public void initializeUser() {
@@ -247,7 +351,13 @@ public class MainActivity extends AppCompatActivity {
         int height = prefs.getInt("height", 0);
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
-        user = new User(height, currentGoal, currentSteps, prefs);
+        Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
+
+        id = gsa.getId();
+        Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
+        user = new User(gsa.getId(), gsa.getEmail(), height, currentGoal, currentSteps, prefs, friends);
+
+        updateDatabase();
     }
 
     public void initializeUiValues() {
@@ -261,15 +371,32 @@ public class MainActivity extends AppCompatActivity {
         subGoal = ((totalSteps/500)+1)*500;
     }
 
+    public void updateDatabase() {
+        acctFirebase.collection("users").document("user_" + id).set(user.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Firebase", "DocumentSnapshot successfully written!");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
+    }
+
     public void setStepCount(long stepCount) {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
             user.setSteps(stepCount);
+            updateDatabase();
             setActiveSteps();
             updateWeek();
             oldTotal = totalSteps;
 
-            checkGoal();
+            if(goalMessageFirstAppearance == true) {
+                checkGoal();
+            }
         }
     }
 
@@ -522,21 +649,26 @@ public class MainActivity extends AppCompatActivity {
 
     public void saveDefaultGoal() {
         int goal = prefs.getInt("goal", 5000);///////////////////////////
-        goalText.setText("Goal: " + (goal + 500) + " steps");
-        user.setGoal(goal+500);
-        Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
-        goalMessageFirstAppearance = true;
+        changeGoal(goal+500);
+
     }
 
     public void saveCustomGoal(View v) {
         goal = (EditText)v.findViewById(R.id.custom_goal);
-        user.setGoal(Integer.parseInt(goal.getText().toString()));
-        editor.putInt("goal",Integer.parseInt(goal.getText().toString()));
-        editor.apply();
         int stepsGoal = Integer.parseInt(goal.getText().toString());
-        goalText.setText("Goal: " + stepsGoal + " steps");
-        Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
+        changeGoal(stepsGoal);
+    }
+
+    public void changeGoal(int newGoal) {
+        goalText.setText("Goal: " + newGoal + " steps");
+        user.setGoal(newGoal);
         goalMessageFirstAppearance = true;
+        notifyGoalChanged();
+    }
+
+    public void notifyGoalChanged() {
+        Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
+        updateDatabase();
     }
 
 }

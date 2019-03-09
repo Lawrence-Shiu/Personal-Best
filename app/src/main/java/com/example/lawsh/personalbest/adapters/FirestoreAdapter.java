@@ -15,18 +15,9 @@ public class FirestoreAdapter {
         this.fstore = fstore;
     }
 
-    public void updateDatabase(User user) {
-        fstore.collection("users").document(user.getId()).set(user.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d("Firebase", "DocumentSnapshot successfully written!");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                Log.w("Firebase", "Error writing document", e);
-            }
-        });
+    public void updateDatabase(User user, OnSuccessListener<Void> successListener, OnFailureListener failureListener) {
+        fstore.collection("users").document(user.getId()).set(user.toMap()).addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
     }
 
     public FirebaseFirestore getFirestoreInstance() {

@@ -30,6 +30,8 @@ import com.example.lawsh.personalbest.adapters.AuthenticationAdapter;
 import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -296,7 +298,17 @@ public class MainActivity extends AppCompatActivity {
         user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
                 height, currentGoal, currentSteps, prefs, friends);
 
-        acctFirebase.updateDatabase(user);
+        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
     }
 
     public void initializeUiValues() {
@@ -314,7 +326,17 @@ public class MainActivity extends AppCompatActivity {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
             user.setSteps(stepCount);
-            acctFirebase.updateDatabase(user);
+            acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("Firebase", "DocumentSnapshot successfully written!");
+                }
+            }, new OnFailureListener() {
+                @Override
+                public void onFailure(Exception e) {
+                    Log.w("Firebase", "Error writing document", e);
+                }
+            });
             setActiveSteps();
             updateWeek();
             oldTotal = totalSteps;
@@ -587,14 +609,34 @@ public class MainActivity extends AppCompatActivity {
     public void changeGoal(int newGoal) {
         goalText.setText("Goal: " + newGoal + " steps");
         user.setGoal(newGoal);
-        acctFirebase.updateDatabase(user);
+        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Firebase", "DocumentSnapshot successfully written!");
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
         goalMessageFirstAppearance = true;
         notifyGoalChanged();
     }
 
     public void notifyGoalChanged() {
         Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
-        acctFirebase.updateDatabase(user);
+        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Firebase", "DocumentSnapshot successfully written!");
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
     }
 
 }

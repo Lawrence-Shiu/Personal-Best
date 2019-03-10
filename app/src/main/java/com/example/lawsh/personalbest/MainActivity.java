@@ -30,9 +30,18 @@ import com.example.lawsh.personalbest.adapters.AuthenticationAdapter;
 import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -121,7 +130,22 @@ public class MainActivity extends AppCompatActivity {
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-        authenticationAdapter = new AuthenticationAdapter(this, getString(R.string.default_web_client_id),this);
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id)) //don't worry about this "error"
+                .requestEmail()
+                .requestId()
+                .build();
+
+        GoogleApiClient client =new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult connectionResult) {
+                        Log.d("MainActivity", "Connection Failed");
+                    }
+                })
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        authenticationAdapter = new AuthenticationAdapter(this, gso,client);
 
         initializeUser();
 
@@ -278,7 +302,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         } else if(requestCode == RC_SIGN_IN) {
-            authenticationAdapter.firebaseAuth(data);
+            authenticationAdapter.firebaseAuth(data,new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        authenticationAdapter
+                                .setCurrentUser(FirebaseAuth.getInstance()
+                                        .getCurrentUser());
+                    } else {
+                        Log.d("MainActivity", "Auth failed");
+                    }
+                }
+            });
         }
     }
 

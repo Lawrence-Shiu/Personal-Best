@@ -37,36 +37,24 @@ public class AuthenticationAdapter {
     private GoogleSignInClient gsc;
     private GoogleApiClient mGoogleApiClient;
 
-    public AuthenticationAdapter(Context context, String client_id, FragmentActivity activity) {
+    public AuthenticationAdapter(Context context, GoogleSignInOptions gso, GoogleApiClient client) {
         this.context = context;
-        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(client_id) //don't worry about this "error"
-                .requestEmail()
-                .requestId()
-                .build();
+        this.gso = gso;
         gsc = GoogleSignIn.getClient(context, gso);
         gsa = GoogleSignIn.getLastSignedInAccount(context);
 
 
-        mGoogleApiClient = new GoogleApiClient.Builder(context)
-                .enableAutoManage(activity, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult connectionResult) {
-                        Log.d("MainActivity", "Connection Failed");
-                    }
-                })
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+        mGoogleApiClient = client;
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
     }
 
-    public void firebaseAuth(Intent data) {
+    public void firebaseAuth(Intent data, OnCompleteListener<AuthResult> completeListener) {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
         try {
             GoogleSignInAccount account = task.getResult(ApiException.class);
-            firebaseAuthWithGoogle(account);
+            firebaseAuthWithGoogle(account, completeListener);
         } catch (ApiException e) {
             e.printStackTrace();
         }
@@ -74,6 +62,9 @@ public class AuthenticationAdapter {
 
     public FirebaseUser getCurrentUser() {
         return currentUser;
+    }
+    public void setCurrentUser(FirebaseUser currentUser){
+        this.currentUser = currentUser;
     }
 
     public GoogleSignInAccount getAccount() {
@@ -84,19 +75,10 @@ public class AuthenticationAdapter {
         return gsc;
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct, OnCompleteListener<AuthResult> completeListener) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            FirebaseUser currentUser = mAuth.getCurrentUser();
-                        } else {
-                            Log.d("MainActivity", "Auth failed");
-                        }
-                    }
-                });
+                .addOnCompleteListener(completeListener);
     }
 
 

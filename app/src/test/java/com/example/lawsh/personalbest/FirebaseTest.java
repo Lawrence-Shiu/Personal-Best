@@ -35,7 +35,7 @@ public class FirebaseTest {
         CollectionReference collectionReference = Mockito.mock(CollectionReference.class);
         Task task = Mockito.mock(Task.class);
 
-        firestoreAdapter = new FirestoreAdapter(fireBase);
+        firestoreAdapter = FirestoreAdapter.getInstance(true, fireBase);
         Mockito.when(fireBase.collection("users")).thenReturn(collectionReference);
         Mockito.when(collectionReference.document(id)).thenReturn(documentReference);
         Mockito.when(documentReference.set(map)).thenReturn(task);

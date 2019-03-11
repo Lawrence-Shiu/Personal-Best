@@ -106,7 +106,9 @@ public class User {
     }
 
     public void setPref(SharedPreferences pref){
+
         this.pref = pref;
+        this.editor = pref.edit();
     }
 
     public Map<String, Object> toMap() {

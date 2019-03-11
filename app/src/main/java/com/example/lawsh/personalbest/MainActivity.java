@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         editor = prefs.edit();
 
         FirebaseApp.initializeApp(MainActivity.this);
-        acctFirebase = FirestoreAdapter.getInstance();
+        acctFirebase = FirestoreAdapter.getInstance(false, null);
 
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class User {
+    private static final User user = new User();
     private String id;
     private String email;
     private int height; //in inches
@@ -27,16 +28,10 @@ public class User {
     //other functionality?
 
     //default constructor
-    public User() {
-        this.id = "";
-        this.email = "";
-        this.height = 0;
-        this.currentGoal = 5000;
-        this.stepsTaken = 0;
-        this.friends = new HashSet<String>();
+    private User() {
     }
 
-    public User(String id, String email, int height, int currentGoal, int stepsTaken, SharedPreferences pref, Set<String> friends) {
+    /* private User(String id, String email, int height, int currentGoal, int stepsTaken, SharedPreferences pref, Set<String> friends) {
         this.id = id;
         this.email = email;
         this.height = height;
@@ -45,6 +40,10 @@ public class User {
         this.pref = pref;
         this.editor = pref.edit();
         this.friends = friends;
+    }*/
+
+    public static User getInstance(){
+        return user;
     }
 
     public String getId() {
@@ -57,6 +56,10 @@ public class User {
 
     public int getHeight() {
         return height;
+    }
+
+    public void setHeight(int height){
+        this.height = height;
     }
 
     public int getCurrentGoal() {
@@ -89,9 +92,21 @@ public class User {
         return email;
     }
 
+    public void setEmail(String email){
+        this.email = email;
+    }
+
+    public void setFriends(Set<String> friends){
+        this.friends = friends;
+    }
+
     public void addFriend(User friend) {
         friends.add(friend.getEmail());
         editor.putStringSet("friends", friends).apply();
+    }
+
+    public void setPref(SharedPreferences pref){
+        this.pref = pref;
     }
 
     public Map<String, Object> toMap() {

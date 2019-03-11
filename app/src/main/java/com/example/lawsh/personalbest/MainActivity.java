@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         editor = prefs.edit();
 
         FirebaseApp.initializeApp(MainActivity.this);
-        acctFirebase = new FirestoreAdapter(FirebaseFirestore.getInstance());
+        acctFirebase = FirestoreAdapter.getInstance();
 
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
@@ -329,9 +329,21 @@ public class MainActivity extends AppCompatActivity {
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
         Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
 
+        /* TODO: We need to retrieve data from the database instead of getting them from
+         * TODO: the shared preference because the user might switch phone
+         **/
+
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
-        user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
-                height, currentGoal, currentSteps, prefs, friends);
+        // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
+         //       height, currentGoal, currentSteps, prefs, friends);
+        user = User.getInstance();
+        user.setId(authenticationAdapter.getAccount().getId());
+        user.setEmail(authenticationAdapter.getAccount().getEmail());
+        user.setHeight(height);
+        user.setGoal(currentGoal);
+        user.setSteps(currentSteps);
+        user.setPref(prefs);
+        user.setFriends(friends);
 
         acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
             @Override

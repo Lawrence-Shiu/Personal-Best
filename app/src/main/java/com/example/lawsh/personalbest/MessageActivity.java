@@ -1,6 +1,7 @@
 package com.example.lawsh.personalbest;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,7 +23,7 @@ public class MessageActivity extends AppCompatActivity {
     //String TAG = this.class.getSimpleName();
 
     String COLLECTION_KEY = "chats";
-    String DOCUMENT_KEY = "chat";
+    String DOCUMENT_KEY;
     String MESSAGES_KEY = "messages";
     String FROM_KEY = "from";
     String TEXT_KEY = "text";
@@ -36,8 +37,9 @@ public class MessageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
         sharedpreferences = getSharedPreferences("FirebaseMessaging", Context.MODE_PRIVATE);
+        Intent intent = getIntent();
 
-
+        DOCUMENT_KEY = intent.getStringExtra("friendname");
         from = sharedpreferences.getString(FROM_KEY, null);
         FirebaseApp.initializeApp(this);
         chat = new FBAdapter(FirebaseFirestore.getInstance()
@@ -51,9 +53,11 @@ public class MessageActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_send).setOnClickListener(view -> sendMessage());
 
-        TextView nameView = findViewById((R.id.user_name));
+        EditText nameView = findViewById((R.id.user_name));
+        from = intent.getStringExtra("friendname");
         nameView.setText(from);
-        nameView.addTextChangedListener(new TextWatcher() {
+        sharedpreferences.edit().putString(FROM_KEY, from).apply();
+        /*nameView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -67,14 +71,17 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
             }
-        });
+        });*/
     }
 
     private void sendMessage() {
+       /*
         if (from == null || from.isEmpty()) {
             Toast.makeText(this, "Enter your name", Toast.LENGTH_SHORT).show();
             return;
-        }
+        }*/
+
+
 
         EditText messageView = findViewById(R.id.text_message);
 

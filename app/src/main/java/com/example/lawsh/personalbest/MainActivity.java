@@ -340,9 +340,9 @@ public class MainActivity extends AppCompatActivity {
         user.setId(authenticationAdapter.getAccount().getId());
         user.setEmail(authenticationAdapter.getAccount().getEmail());
         user.setHeight(height);
+        user.setPref(prefs);
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
-        user.setPref(prefs);
         user.setFriends(friends);
 
         acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {

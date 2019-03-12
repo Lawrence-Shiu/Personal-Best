@@ -5,7 +5,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.lawsh.personalbest"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -24,6 +24,10 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 repositories {
@@ -59,4 +63,3 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.2-alpha01'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
 }
-

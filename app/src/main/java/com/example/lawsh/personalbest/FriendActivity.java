@@ -1,6 +1,7 @@
 package com.example.lawsh.personalbest;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -71,6 +72,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     public void onItemClick(View view, int position) {
         if(deleteTrue == false) {
             Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+            startMessageActivity(position);
         }else{
             adapter.removeItem(position);
         }
@@ -103,6 +105,12 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
                     }
                 });
         return builder.create();
+    }
+
+    public void startMessageActivity(int i){
+        Intent activity = new Intent(FriendActivity.this, MessageActivity.class);
+        activity.putExtra("friendname", friends.get(i));
+        startActivity(activity);
     }
 
 }

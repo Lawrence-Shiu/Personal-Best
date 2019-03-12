@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "969646063950-d1hngi96fhjq1p5hpfasb6m810k0m0nr.apps.googleusercontent.com",
+          "client_id": "969646063950-6hfl1jo397q0a2vdkieut09b3iqq5vio.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.lawsh.personalbest",
-            "certificate_hash": "99c2ee806ea9e84d13fda8db5de464d2e57479ec"
+            "certificate_hash": "56fc67b1643e84890c22e0714673b8bbe350937a"
           }
         },
         {

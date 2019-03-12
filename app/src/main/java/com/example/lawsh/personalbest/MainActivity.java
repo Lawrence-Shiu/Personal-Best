@@ -23,43 +23,29 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.support.design.widget.*;
 import android.widget.Toast;
 
+import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
+import com.example.lawsh.personalbest.adapters.AuthenticationAdapter;
 import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.data.DataBufferObserver;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.android.gms.common.data.DataBufferObserver;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
@@ -107,28 +93,18 @@ public class MainActivity extends AppCompatActivity {
 
     private UpdateAsyncPassiveCount passiveRunner;
 
-    private FirebaseFirestore acctFirebase;
-    private CollectionReference acctCollection;
-    private GoogleSignInAccount gsa;
-    private GoogleApiClient mGoogleApiClient;
+    private FirestoreAdapter acctFirebase;
+    private AuthenticationAdapter authenticationAdapter;
 
     private String dayOfTheWeek;
     private FitnessService fitnessService;
     private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
     private SimpleDateFormat sdf;
-    private String id;
-    private GoogleSignInOptions gso;
-    private GoogleSignInClient gsc;
-
-    private FirebaseAuth mAuth;
-    private FirebaseUser currentUser;
 
     @Override
     public void onStart() {
         super.onStart();
-        //check if user is signed in
-        currentUser = mAuth.getCurrentUser();
     }
 
     @Override
@@ -140,10 +116,8 @@ public class MainActivity extends AppCompatActivity {
         editor = prefs.edit();
 
         FirebaseApp.initializeApp(MainActivity.this);
-        acctFirebase = FirebaseFirestore.getInstance();
-        acctCollection = acctFirebase.collection("users");
+        acctFirebase = FirestoreAdapter.getInstance(false, null);
 
-        mAuth = FirebaseAuth.getInstance();
         FitnessServiceFactory.put(fitnessServiceKey, new FitnessServiceFactory.BluePrint() {
             @Override
             public FitnessService create(MainActivity mainActivity) {
@@ -153,15 +127,13 @@ public class MainActivity extends AppCompatActivity {
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id)) //don't worry about this "error"
                 .requestEmail()
                 .requestId()
                 .build();
-        gsc = GoogleSignIn.getClient(this, gso);
-        gsa = GoogleSignIn.getLastSignedInAccount(this);
 
-        mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+        GoogleApiClient client =new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -170,8 +142,9 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+        authenticationAdapter = new AuthenticationAdapter(this, gso,client);
 
-        if(currentUser == null) {
+        if(authenticationAdapter.getCurrentUser() == null) {
             signIn();
         }
 
@@ -226,7 +199,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 setStepCount(totalSteps+=500);
-                Log.d("USER_ID_CHECK", id);
             }
         });
 
@@ -234,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 Intent friendActivity = new Intent(MainActivity.this, FriendActivity.class);
-                friendActivity.putExtra("user", user);
+                friendActivity.putExtra("id", user.getId());
                 startActivity(friendActivity);
             }
         });
@@ -260,11 +232,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         fitnessService.setup();
-    }
-
-    private void signIn() {
-        Intent signInIntent = gsc.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     /*
@@ -320,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
                 initializeUser();
-
+                                     
             }
             initializeUiValues();
 
@@ -338,29 +305,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         } else if(requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account);
-            } catch (ApiException e) {
-                e.printStackTrace();
-            }
+            authenticationAdapter.firebaseAuth(data,new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        authenticationAdapter
+                                .setCurrentUser(FirebaseAuth.getInstance()
+                                        .getCurrentUser());
+                    } else {
+                        Log.d("MainActivity", "Auth failed");
+                    }
+                }
+            });
         }
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            FirebaseUser currentUser = mAuth.getCurrentUser();
-                        } else {
-                            Log.d("MainActivity", "Auth failed");
-                        }
-                    }
-                });
+    private void signIn() {
+        Intent signInIntent = authenticationAdapter.getGsc().getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     public void initializeUser() {
@@ -370,13 +332,33 @@ public class MainActivity extends AppCompatActivity {
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
         Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
 
-        id = gsa.getId();
+        /* TODO: We need to retrieve data from the database instead of getting them from
+         * TODO: the shared preference because the user might switch phone
+         **/
+
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
-        user = new User(gsa.getId(), gsa.getEmail(), height, currentGoal, currentSteps, prefs, friends);
+        // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
+         //       height, currentGoal, currentSteps, prefs, friends);
+        user = User.getInstance();
+        user.setId(authenticationAdapter.getAccount().getId());
+        user.setEmail(authenticationAdapter.getAccount().getEmail());
+        user.setPref(prefs);
+        user.setHeight(height);
+        user.setGoal(currentGoal);
+        user.setSteps(currentSteps);
+        user.setFriends(friends);
 
-        user.addFirebase(acctFirebase);
+        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
 
-        updateDatabase();
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
     }
 
     public void initializeUiValues() {
@@ -390,25 +372,21 @@ public class MainActivity extends AppCompatActivity {
         subGoal = ((totalSteps/500)+1)*500;
     }
 
-    public void updateDatabase() {
-        acctFirebase.collection("users").document("user_" + id).set(user.toMap()).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d("Firebase", "DocumentSnapshot successfully written!");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                Log.w("Firebase", "Error writing document", e);
-            }
-        });
-    }
-
     public void setStepCount(long stepCount) {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
             user.setSteps(stepCount);
-            updateDatabase();
+            acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("Firebase", "DocumentSnapshot successfully written!");
+                }
+            }, new OnFailureListener() {
+                @Override
+                public void onFailure(Exception e) {
+                    Log.w("Firebase", "Error writing document", e);
+                }
+            });
             setActiveSteps();
             updateWeek();
             oldTotal = totalSteps;
@@ -681,14 +659,34 @@ public class MainActivity extends AppCompatActivity {
     public void changeGoal(int newGoal) {
         goalText.setText("Goal: " + newGoal + " steps");
         user.setGoal(newGoal);
-        updateDatabase();
+        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Firebase", "DocumentSnapshot successfully written!");
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
         goalMessageFirstAppearance = true;
         notifyGoalChanged();
     }
 
     public void notifyGoalChanged() {
         Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
-        updateDatabase();
+        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("Firebase", "DocumentSnapshot successfully written!");
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
     }
 
 }

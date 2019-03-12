@@ -10,11 +10,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
@@ -26,7 +32,9 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     ArrayList<String> friends;
     RecyclerView recyclerView;
     boolean deleteTrue = false;
-    User user;
+    User user = User.getInstance();
+    FirestoreAdapter fAdapter;
+    FirebaseFirestore fbase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +43,8 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
 
         // data to populate the RecyclerView with
         friends = new ArrayList<>();
-
-        user = (User)getIntent().getSerializableExtra("user");
+        fAdapter = FirestoreAdapter.getInstance(false, null);
+        fbase = fAdapter.getFirestoreInstance();
 
         // set up buttons
         addFriendBtn = findViewById(R.id.addFriend);
@@ -75,15 +83,58 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         if(deleteTrue == false) {
             Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
         }else{
-            adapter.removeItem(position);
+            removeFriend(position);
         }
         recyclerView.setAdapter(adapter);
     }
 
+    public void removeFriend(int position){
+        String friend = adapter.getItem(position);
+        user.removeFriend(friend);
+        fAdapter.updateDatabase(user, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
+        adapter.removeItem(position);
+    }
+
     public void addFriend(String name){
-        checkUser(name);
+        if(!checkUser(name))
+            notValidFriend();
         friends.add(name);
+        user.addFriend(name);
+        fAdapter.updateDatabase(user, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
         recyclerView.setAdapter(adapter);
+    }
+
+    public void notValidFriend(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Not a valid user");
+        builder.setMessage("Please enter a valid user email");
+
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.create().show();
     }
 
     public AlertDialog onCreateAddFriend() {
@@ -110,6 +161,6 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     }
 
     public boolean checkUser(String email){
-        return false;
+        return fbase.collection("users").document(email) != null;
     }
 }

@@ -10,10 +10,12 @@ import com.google.firebase.firestore.model.Document;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class User implements Serializable {
+public class User{
+    private static final User user = new User();
     private String id;
     private String email;
     private int height; //in inches
@@ -32,7 +34,11 @@ public class User implements Serializable {
 
     //other functionality?
 
-    public User(String id, String email, int height, int currentGoal, int stepsTaken, SharedPreferences pref, Set<String> friends) {
+    //default constructor
+    private User() {
+    }
+
+    /* private User(String id, String email, int height, int currentGoal, int stepsTaken, SharedPreferences pref, Set<String> friends) {
         this.id = id;
         this.email = email;
         this.height = height;
@@ -41,24 +47,30 @@ public class User implements Serializable {
         this.pref = pref;
         this.editor = pref.edit();
         this.friends = friends;
+    }*/
+
+    public static User getInstance(){
+        return user;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public void setId(String id) {
         this.id = id;
-        Log.d("USER_ID", id);
     }
 
     public int getHeight() {
         return height;
     }
 
-    public int getCurrentGoal() {
-        return currentGoal;
+    public void setHeight(int height){
+        this.height = height;
     }
 
-    public void setHeight(int height) {
-        this.height = height;
-        editor.putInt("height", this.height).apply();
+    public int getCurrentGoal() {
+        return currentGoal;
     }
 
     public void setGoal(int newGoal) {
@@ -87,9 +99,28 @@ public class User implements Serializable {
         return email;
     }
 
-    public void addFriend(User friend) {
-        friends.add(friend.getEmail());
+    public void setEmail(String email){
+        this.email = email;
+    }
+
+    public void setFriends(Set<String> friends){
+        this.friends = friends;
+    }
+
+    public void addFriend(String friend) {
+        friends.add(friend);
         editor.putStringSet("friends", friends).apply();
+    }
+
+    public void removeFriend(String friend) {
+        friends.remove(friend);
+        editor.remove(friend).apply(); //putStringSet("friends", friends).apply();
+    }
+
+    public void setPref(SharedPreferences pref){
+
+        this.pref = pref;
+        this.editor = pref.edit();
     }
 
     public Map<String, Object> toMap() {
@@ -105,7 +136,4 @@ public class User implements Serializable {
         return map;
     }
 
-    public void addFirebase(FirebaseFirestore firebase){
-        this.acctFirebase = firebase;
-    }
 }

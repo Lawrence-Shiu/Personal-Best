@@ -14,7 +14,13 @@ public class FirestoreAdapter implements IDatabase {
 
     private FirebaseFirestore fstoreInstance;
 
-    public FirestoreAdapter(FirebaseFirestore fstore) {
+    public static volatile FirestoreAdapter fstoreSingleton = new FirestoreAdapter(FirebaseFirestore.getInstance());
+
+    public static FirestoreAdapter getInstance() {
+        return fstoreSingleton;
+    }
+
+    private FirestoreAdapter(FirebaseFirestore fstore) {
         this.fstoreInstance = fstore;
     }
 

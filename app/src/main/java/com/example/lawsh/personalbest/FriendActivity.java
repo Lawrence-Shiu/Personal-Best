@@ -26,6 +26,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     ArrayList<String> friends;
     RecyclerView recyclerView;
     boolean deleteTrue = false;
+    User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +35,8 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
 
         // data to populate the RecyclerView with
         friends = new ArrayList<>();
+
+        user = (User)getIntent().getSerializableExtra("user");
 
         // set up buttons
         addFriendBtn = findViewById(R.id.addFriend);
@@ -78,6 +81,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     }
 
     public void addFriend(String name){
+        checkUser(name);
         friends.add(name);
         recyclerView.setAdapter(adapter);
     }
@@ -105,4 +109,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         return builder.create();
     }
 
+    public boolean checkUser(String email){
+        return false;
+    }
 }

@@ -1,14 +1,19 @@
 package com.example.lawsh.personalbest;
 
 import android.content.SharedPreferences;
+import android.provider.DocumentsContract;
 import android.util.Log;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.model.Document;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class User {
+public class User implements Serializable {
     private String id;
     private String email;
     private int height; //in inches
@@ -22,6 +27,8 @@ public class User {
 
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
+
+    private FirebaseFirestore acctFirebase;
 
     //other functionality?
 
@@ -96,5 +103,9 @@ public class User {
         map.put("friends", friends.toString());
 
         return map;
+    }
+
+    public void addFirebase(FirebaseFirestore firebase){
+        this.acctFirebase = firebase;
     }
 }

@@ -233,7 +233,9 @@ public class MainActivity extends AppCompatActivity {
         friendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                startFriendActivity();
+                Intent friendActivity = new Intent(MainActivity.this, FriendActivity.class);
+                friendActivity.putExtra("user", user);
+                startActivity(friendActivity);
             }
         });
 
@@ -371,6 +373,8 @@ public class MainActivity extends AppCompatActivity {
         id = gsa.getId();
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
         user = new User(gsa.getId(), gsa.getEmail(), height, currentGoal, currentSteps, prefs, friends);
+
+        user.addFirebase(acctFirebase);
 
         updateDatabase();
     }

@@ -70,7 +70,7 @@ public class FirebaseTest {
         osl = PowerMockito.mock(OnSuccessListener.class, Mockito.RETURNS_DEEP_STUBS);
         ofl = PowerMockito.mock(OnFailureListener.class, Mockito.RETURNS_DEEP_STUBS);*/
 
-        firestoreAdapter = new FirestoreAdapter();
+        firestoreAdapter = firestoreAdapter.getInstance();
         //Mockito.when(firestoreAdapter).updateDatabase((fstore, testUser)).thenReturn(null);
 
         //firestoreAdapter.updateDatabase(testUser);

@@ -28,8 +28,6 @@ import static android.provider.Settings.System.getString;
 
 public class AuthenticationAdapter implements IAuth {
 
-    private Context context;
-
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private GoogleSignInOptions gso;
@@ -37,8 +35,17 @@ public class AuthenticationAdapter implements IAuth {
     private GoogleSignInClient gsc;
     private GoogleApiClient mGoogleApiClient;
 
-    public AuthenticationAdapter(Context context, String client_id, FragmentActivity activity) {
-        this.context = context;
+    public static volatile AuthenticationAdapter authSingleton = new AuthenticationAdapter();
+
+    public static AuthenticationAdapter getInstance() {
+        return authSingleton;
+    }
+
+    private AuthenticationAdapter() {
+
+    }
+
+    public void setApiFields(Context context, String client_id, FragmentActivity activity) {
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(client_id) //don't worry about this "error"
                 .requestEmail()

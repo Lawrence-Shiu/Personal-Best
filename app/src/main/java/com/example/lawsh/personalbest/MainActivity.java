@@ -122,7 +122,8 @@ public class MainActivity extends AppCompatActivity {
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-        authenticationAdapter = new AuthenticationAdapter(this, getString(R.string.default_web_client_id),this);
+        authenticationAdapter = AuthenticationAdapter.getInstance();
+        authenticationAdapter.setApiFields(this, getString(R.string.default_web_client_id), this);
 
         initializeUser(acctFirebase);
 

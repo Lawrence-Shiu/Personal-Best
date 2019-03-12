@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "969646063950-e9kegghqnc0dsaordmn4labqrpfknu1a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lawsh.personalbest",
+            "certificate_hash": "99c2ee806ea9e84d13fda8db5de464d2e57479ec"
+          }
+        },
+        {
           "client_id": "969646063950-2e5dcdvmunigkic84d0oqoe76o7lcotj.apps.googleusercontent.com",
           "client_type": 3
         }

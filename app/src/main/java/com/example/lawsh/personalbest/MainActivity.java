@@ -105,9 +105,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        if(authenticationAdapter.getCurrentUser() == null) {
-            signIn();
-        }
     }
 
     @Override
@@ -147,6 +144,10 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         authenticationAdapter = new AuthenticationAdapter(this, gso,client);
 
+        if(authenticationAdapter.getCurrentUser() == null) {
+            signIn();
+        }
+
         initializeUser();
 
         //Get the date
@@ -158,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
         Intent setup = new Intent(MainActivity.this, SetupActivity.class);
         startActivityForResult(setup, REQ_CODE);
         createNotificationChannel();
+
 
         // Defines UI elements by resource id
         mToolbar = findViewById(R.id.toolbar);
@@ -203,7 +205,12 @@ public class MainActivity extends AppCompatActivity {
 
         friendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){ startFriendActivity(); }
+            public void onClick(View v){
+                Intent friendActivity = new Intent(MainActivity.this, FriendActivity.class);
+                friendActivity.putExtra("id", user.getId());
+                startActivity(friendActivity);
+            }
+
         });
 
         fitBtn.setOnClickListener(new View.OnClickListener() {
@@ -238,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
     public void startFriendActivity(){
         Intent activity = new Intent(MainActivity.this, FriendActivity.class);
         activity.putExtra("user_email", user.getEmail());
+        activity.putExtra("user_id", user.getId());
         startActivity(activity);
     }
 
@@ -339,8 +347,10 @@ public class MainActivity extends AppCompatActivity {
         user = User.getInstance();
         //user.setId(authenticationAdapter.getAccount().getId());
         //user.setEmail(authenticationAdapter.getAccount().getEmail());
-        user.setId("tim");//////////////////////////////////fix this//////////////////////////////////////////////////////////////
-        user.setEmail("chukkabruh@gmail.com");///////////////////////////////////////////////////////////////////////////////////
+
+        user.setEmail("lshiu@ucsd.edu");
+        user.setId("lawrence");
+        user.setPref(prefs);
         user.setHeight(height);
         user.setPref(prefs);
         user.setGoal(currentGoal);

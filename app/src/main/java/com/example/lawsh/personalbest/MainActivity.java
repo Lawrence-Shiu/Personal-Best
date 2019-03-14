@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
                 initializeUser();
-                                     
+
             }
             initializeUiValues();
 

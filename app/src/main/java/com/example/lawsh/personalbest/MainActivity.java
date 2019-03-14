@@ -203,9 +203,7 @@ public class MainActivity extends AppCompatActivity {
 
         friendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
-                startFriendActivity();
-            }
+            public void onClick(View v){ startFriendActivity(); }
         });
 
         fitBtn.setOnClickListener(new View.OnClickListener() {
@@ -239,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startFriendActivity(){
         Intent activity = new Intent(MainActivity.this, FriendActivity.class);
+        activity.putExtra("user_email", user.getEmail());
         startActivity(activity);
     }
 
@@ -331,14 +330,17 @@ public class MainActivity extends AppCompatActivity {
 
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
+         * TODO: id isnt working, hardcoded values
          **/
 
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
         // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
          //       height, currentGoal, currentSteps, prefs, friends);
         user = User.getInstance();
-        user.setId(authenticationAdapter.getAccount().getId());
-        user.setEmail(authenticationAdapter.getAccount().getEmail());
+        //user.setId(authenticationAdapter.getAccount().getId());
+        //user.setEmail(authenticationAdapter.getAccount().getEmail());
+        user.setId("tim");//////////////////////////////////fix this//////////////////////////////////////////////////////////////
+        user.setEmail("chukkabruh@gmail.com");///////////////////////////////////////////////////////////////////////////////////
         user.setHeight(height);
         user.setPref(prefs);
         user.setGoal(currentGoal);

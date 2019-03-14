@@ -31,15 +31,17 @@ public class MessageActivity extends AppCompatActivity {
     public SharedPreferences sharedpreferences;
     IDB chat;
     String from;
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
-        sharedpreferences = getSharedPreferences("FirebaseMessaging", Context.MODE_PRIVATE);
-        Intent intent = getIntent();
 
-        DOCUMENT_KEY = intent.getStringExtra("friendname");
+        intent = getIntent();
+        buildDocKey();
+        sharedpreferences = getSharedPreferences("FirebaseMessaging", Context.MODE_PRIVATE);
+
         from = sharedpreferences.getString(FROM_KEY, null);
         FirebaseApp.initializeApp(this);
         chat = new FBAdapter(FirebaseFirestore.getInstance()
@@ -52,37 +54,15 @@ public class MessageActivity extends AppCompatActivity {
         initMessageUpdateListener();
 
         findViewById(R.id.btn_send).setOnClickListener(view -> sendMessage());
+        findViewById(R.id.back_btn).setOnClickListener(view -> finish());
 
-        EditText nameView = findViewById((R.id.user_name));
-        from = intent.getStringExtra("friendname");
+        TextView nameView = findViewById((R.id.user_name));
+        from = intent.getStringExtra("user_email");
         nameView.setText(from);
         sharedpreferences.edit().putString(FROM_KEY, from).apply();
-        /*nameView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                from = s.toString();
-                sharedpreferences.edit().putString(FROM_KEY, from).apply();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });*/
     }
 
     private void sendMessage() {
-       /*
-        if (from == null || from.isEmpty()) {
-            Toast.makeText(this, "Enter your name", Toast.LENGTH_SHORT).show();
-            return;
-        }*/
-
-
-
         EditText messageView = findViewById(R.id.text_message);
 
         Map<String, String> newMessage = new HashMap<>();
@@ -90,12 +70,6 @@ public class MessageActivity extends AppCompatActivity {
         newMessage.put(TEXT_KEY, messageView.getText().toString());
 
         chat.add(messageView,newMessage);
-/*
-        chat.add(newMessage).addOnSuccessListener(result -> {
-            messageView.setText("");
-        }).addOnFailureListener(error -> {
-            Log.e(TAG, error.getLocalizedMessage());
-        });*/
     }
 
     private void initMessageUpdateListener() {
@@ -104,15 +78,15 @@ public class MessageActivity extends AppCompatActivity {
 
     private void subscribeToNotificationsTopic() {
         chat.subscribe(this, DOCUMENT_KEY);
-       /* FirebaseMessaging.getInstance().subscribeToTopic(DOCUMENT_KEY)
-                .addOnCompleteListener(task -> {
-                            String msg = "Subscribed to notifications";
-                            if (!task.isSuccessful()) {
-                                msg = "Subscribe to notifications failed";
-                            }
-                            Log.d(TAG, msg);
-                            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                        }
-                );*/
+    }
+
+    public void buildDocKey() {
+        String userEmail = intent.getStringExtra("user_email");
+        String friendEmail = intent.getStringExtra("friend_email");
+        if(userEmail.compareTo(friendEmail) > 0) {
+            DOCUMENT_KEY = friendEmail + "+" + userEmail;
+        } else {
+            DOCUMENT_KEY = userEmail + "+" + friendEmail;
+        }
     }
 }

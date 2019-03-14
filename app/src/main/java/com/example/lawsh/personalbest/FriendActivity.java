@@ -108,8 +108,14 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     }
 
     public void startMessageActivity(int i){
+        // to grab user id
+        Intent prev = getIntent();
+        // to pass user id and friend email to messageing activity
         Intent activity = new Intent(FriendActivity.this, MessageActivity.class);
-        activity.putExtra("friendname", friends.get(i));
+        Bundle extras = new Bundle();
+        extras.putString("user_email", prev.getStringExtra("user_email"));
+        extras.putString("friend_email", friends.get(i));
+        activity.putExtras(extras);
         startActivity(activity);
     }
 

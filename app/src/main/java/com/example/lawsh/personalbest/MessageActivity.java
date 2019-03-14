@@ -31,7 +31,9 @@ public class MessageActivity extends AppCompatActivity {
     public SharedPreferences sharedpreferences;
     IDB chat;
     String from;
+    String friendEmail;
     private Intent intent;
+    User user = User.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +59,8 @@ public class MessageActivity extends AppCompatActivity {
         findViewById(R.id.back_btn).setOnClickListener(view -> finish());
 
         TextView nameView = findViewById((R.id.user_name));
-        from = intent.getStringExtra("user_email");
-        nameView.setText(from);
+        from = user.getId();
+        nameView.setText(friendEmail);
         sharedpreferences.edit().putString(FROM_KEY, from).apply();
     }
 
@@ -81,8 +83,8 @@ public class MessageActivity extends AppCompatActivity {
     }
 
     public void buildDocKey() {
-        String userEmail = intent.getStringExtra("user_email");
-        String friendEmail = intent.getStringExtra("friend_email");
+        String userEmail = user.getEmail();
+        friendEmail = intent.getStringExtra("friend_email");
         if(userEmail.compareTo(friendEmail) > 0) {
             DOCUMENT_KEY = friendEmail + "+" + userEmail;
         } else {

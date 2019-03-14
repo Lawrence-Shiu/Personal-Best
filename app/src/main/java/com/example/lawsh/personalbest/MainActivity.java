@@ -207,7 +207,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 Intent friendActivity = new Intent(MainActivity.this, FriendActivity.class);
-                friendActivity.putExtra("id", user.getId());
                 startActivity(friendActivity);
             }
 

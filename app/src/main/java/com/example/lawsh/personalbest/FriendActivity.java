@@ -64,8 +64,6 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         fAdapter = FirestoreAdapter.getInstance(false, null);
         fbase = fAdapter.getFirestoreInstance();
 
-        email = getIntent().getStringExtra("user_email");
-        id = getIntent().getStringExtra("user_id");
         // set up buttons
         addFriendBtn = findViewById(R.id.addFriend);
         rmFriendBtn = findViewById(R.id.deleteFriend);
@@ -198,10 +196,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         Intent prev = getIntent();
         // to pass user id and friend email to messageing activity
         Intent activity = new Intent(FriendActivity.this, MessageActivity.class);
-        Bundle extras = new Bundle();
-        extras.putString("user_email", prev.getStringExtra("user_email"));
-        extras.putString("friend_email", friends.get(i));
-        activity.putExtras(extras);
+        activity.putExtra("friend_email", friends.get(i));
         startActivity(activity);
     }
 

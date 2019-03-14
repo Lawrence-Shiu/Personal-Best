@@ -210,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
                 friendActivity.putExtra("id", user.getId());
                 startActivity(friendActivity);
             }
+
         });
 
         fitBtn.setOnClickListener(new View.OnClickListener() {
@@ -290,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
                 initializeUser();
-                                     
+
             }
             initializeUiValues();
 
@@ -337,6 +338,7 @@ public class MainActivity extends AppCompatActivity {
 
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
+         * TODO: id isnt working, hardcoded values
          **/
 
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
@@ -345,10 +347,12 @@ public class MainActivity extends AppCompatActivity {
         user = User.getInstance();
         //user.setId(authenticationAdapter.getAccount().getId());
         //user.setEmail(authenticationAdapter.getAccount().getEmail());
+
         user.setEmail("lshiu@ucsd.edu");
-        user.setId("jun");
+        user.setId("lawrence");
         user.setPref(prefs);
         user.setHeight(height);
+        user.setPref(prefs);
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
         user.setFriends(friends);

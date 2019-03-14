@@ -1,6 +1,7 @@
 package com.example.lawsh.personalbest;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -109,6 +110,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     public void onItemClick(View view, int position) {
         if(deleteTrue == false) {
             Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+            startMessageActivity(position);
         }else{
             removeFriend(position);
         }
@@ -190,4 +192,17 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     public boolean checkUser(String email){
         return fbase.collection("users").document(email) != null;
     }
+  
+    public void startMessageActivity(int i){
+        // to grab user id
+        Intent prev = getIntent();
+        // to pass user id and friend email to messageing activity
+        Intent activity = new Intent(FriendActivity.this, MessageActivity.class);
+        Bundle extras = new Bundle();
+        extras.putString("user_email", prev.getStringExtra("user_email"));
+        extras.putString("friend_email", friends.get(i));
+        activity.putExtras(extras);
+        startActivity(activity);
+    }
+
 }

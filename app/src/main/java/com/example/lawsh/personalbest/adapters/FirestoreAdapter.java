@@ -35,7 +35,7 @@ public class FirestoreAdapter {
     }
 
     public void updateDatabase(User user, OnSuccessListener<Void> successListener, OnFailureListener failureListener) {
-        fstore.collection("users").document(user.getId()).set(user.toMap()).addOnSuccessListener(successListener)
+        fstore.collection("users").document("12354").set(user.toMap()).addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }
 

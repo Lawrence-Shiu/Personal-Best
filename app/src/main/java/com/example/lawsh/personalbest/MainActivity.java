@@ -3,6 +3,7 @@ package com.example.lawsh.personalbest;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,6 +32,7 @@ import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private String PASSIVE_KEY = "PASSIVE_KEY";
     private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     public static final int REQ_CODE = 233;
-    public static final int RC_SIGN_IN = 1;
+
 
     //private static final String TAG = "mainActivity";
 
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView velocity;
     private EditText goal;
     private Toolbar mToolbar;
+
 
     private int subGoal;
     private int totalSteps = 0;
@@ -105,9 +108,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        if(authenticationAdapter.getCurrentUser() == null) {
-            signIn();
-        }
+        Log.d("MainActivity", "Before Sign in");
+        signIn();
+        initializeUser();
     }
 
     @Override
@@ -145,9 +148,6 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        authenticationAdapter = new AuthenticationAdapter(this, gso,client);
-
-        initializeUser();
 
         //Get the date
         sdf = new SimpleDateFormat("EEEE");
@@ -229,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         fitnessService.setup();
+        authenticationAdapter = new AuthenticationAdapter(this, gso,client);
     }
 
     /*
@@ -301,25 +302,23 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             });
-        } else if(requestCode == RC_SIGN_IN) {
-            authenticationAdapter.firebaseAuth(data,new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-                        authenticationAdapter
-                                .setCurrentUser(FirebaseAuth.getInstance()
-                                        .getCurrentUser());
-                    } else {
-                        Log.d("MainActivity", "Auth failed");
-                    }
-                }
-            });
         }
     }
 
     private void signIn() {
-        Intent signInIntent = authenticationAdapter.getGsc().getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        authenticationAdapter.firebaseAuth(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(Task<AuthResult> task) {
+                Log.d("MainActivity", "After Sign in");
+                if (task.isSuccessful()) {
+                    authenticationAdapter
+                            .setCurrentUser(FirebaseAuth.getInstance()
+                                    .getCurrentUser());
+                } else {
+                    Log.d("MainActivity", "Auth failed");
+                }
+            }
+        });
     }
 
     public void initializeUser() {
@@ -337,12 +336,12 @@ public class MainActivity extends AppCompatActivity {
         // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
          //       height, currentGoal, currentSteps, prefs, friends);
         user = User.getInstance();
+        user.setPref(prefs);
         user.setId(authenticationAdapter.getAccount().getId());
         user.setEmail(authenticationAdapter.getAccount().getEmail());
         user.setHeight(height);
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
-        user.setPref(prefs);
         user.setFriends(friends);
 
         acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {

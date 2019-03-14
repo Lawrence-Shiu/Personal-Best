@@ -50,14 +50,8 @@ public class AuthenticationAdapter {
         currentUser = mAuth.getCurrentUser();
     }
 
-    public void firebaseAuth(Intent data, OnCompleteListener<AuthResult> completeListener) {
-        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-        try {
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            firebaseAuthWithGoogle(account, completeListener);
-        } catch (ApiException e) {
-            e.printStackTrace();
-        }
+    public void firebaseAuth(OnCompleteListener<AuthResult> completeListener) {
+        firebaseAuthWithGoogle(gsa, completeListener);
     }
 
     public FirebaseUser getCurrentUser() {

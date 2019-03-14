@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(setup, REQ_CODE);
         createNotificationChannel();
 
+
         // Defines UI elements by resource id
         mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -242,6 +243,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void startFriendActivity(){
         Intent activity = new Intent(MainActivity.this, FriendActivity.class);
+        activity.putExtra("user_email", user.getEmail());
+        activity.putExtra("user_id", user.getId());
         startActivity(activity);
     }
 
@@ -340,8 +343,10 @@ public class MainActivity extends AppCompatActivity {
         // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
          //       height, currentGoal, currentSteps, prefs, friends);
         user = User.getInstance();
-        user.setId(authenticationAdapter.getAccount().getId());
-        user.setEmail(authenticationAdapter.getAccount().getEmail());
+        //user.setId(authenticationAdapter.getAccount().getId());
+        //user.setEmail(authenticationAdapter.getAccount().getEmail());
+        user.setEmail("lshiu@ucsd.edu");
+        user.setId("jun");
         user.setPref(prefs);
         user.setHeight(height);
         user.setGoal(currentGoal);

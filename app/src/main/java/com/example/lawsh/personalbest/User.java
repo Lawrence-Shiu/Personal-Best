@@ -136,4 +136,8 @@ public class User{
         return map;
     }
 
+    public Set<String> getFriends(){
+        return friends;
+    }
+
 }

@@ -379,11 +379,11 @@ public class MainActivity extends AppCompatActivity {
         });
         //}
 
-        acctFirebase.getDatabase();
+
         ProgressDialog mProgress = new ProgressDialog(this);
         mProgress.setCanceledOnTouchOutside(false);
         mProgress.show();
-
+        acctFirebase.getDatabase(mProgress);
     }
 
     public void initializeUiValues() {

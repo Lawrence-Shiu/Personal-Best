@@ -61,8 +61,8 @@ public class FirestoreAdapter {
         return fstore;
     }
 
-    public void getDatabase(){
-        CountDownLatch done = new CountDownLatch(1);
+    public void getDatabase(ProgressDialog progressDialog){
+        //CountDownLatch done = new CountDownLatch(1);
         fstore.collection("users")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -70,9 +70,9 @@ public class FirestoreAdapter {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             qs = task.getResult();
-                            //progressDialog.dismiss();
+                            progressDialog.dismiss();
                             Log.d("PendingFriendActivity", "waiting");
-                            done.countDown();
+                            //done.countDown();
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }

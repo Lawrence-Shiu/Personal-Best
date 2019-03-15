@@ -17,7 +17,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -30,7 +32,7 @@ public class FirestoreAdapter {
     private static final String TAG = "PendingFriendActivity";
 
     Map<String,Object> map;
-    QuerySnapshot qs;
+    QuerySnapshot[] qs = new QuerySnapshot[2];
 
     private FirestoreAdapter(){
 
@@ -57,40 +59,49 @@ public class FirestoreAdapter {
                 .addOnFailureListener(failureListener);
     }
 
+    public void updatePending(String email, Map<String,Object> map, OnSuccessListener<Void> successListener, OnFailureListener failureListener) {
+        fstore.collection("requests").document(email).set(map).addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
+    }
+
     public FirebaseFirestore getFirestoreInstance() {
         return fstore;
     }
 
-    public void getDatabase(ProgressDialog progressDialog){
-        //CountDownLatch done = new CountDownLatch(1);
-        fstore.collection("users")
+    public void getDatabase(String path, ProgressDialog progressDialog, int index){
+        CountDownLatch done = new CountDownLatch(1);
+        fstore.collection(path)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            qs = task.getResult();
+                            qs[index] =  task.getResult();
                             progressDialog.dismiss();
                             Log.d("PendingFriendActivity", "waiting");
-                            //done.countDown();
+                            done.countDown();
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }
                     }
                 });
         /*
-        while(!(Thread.interrupted())){
+        //while(!(Thread.interrupted())){
             try{
+                Log.d("PendingFriendActivity", "done waiting");
+
                 done.await();
             }catch(InterruptedException e){
+                Log.d("PendingFriendActivity", "thread interupted");
                 Thread.currentThread().interrupt();
             }
-        }*/
+        //}*/
 
     }
 
-    public Map<String, Object> getMap(String email){
-        for (QueryDocumentSnapshot document : qs) {
+    public Map<String, Object> getMap(String email, int path){
+        map = new HashMap<>();
+        for (QueryDocumentSnapshot document : qs[path]) {
             Log.d(TAG, document.getId() + " user id: " + email + " => " + document.getData());
             if(email.equals(document.getId())){
                 map = document.getData();
@@ -108,7 +119,7 @@ public class FirestoreAdapter {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            qs = task.getResult();
+                            //qs = task.getResult();
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }

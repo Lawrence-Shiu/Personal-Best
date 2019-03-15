@@ -13,15 +13,18 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
+import com.example.lawsh.personalbest.adapters.Observer;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
-public class PendingFriendActivity extends AppCompatActivity implements FriendAdapter.ItemClickListener{
+public class PendingFriendActivity extends AppCompatActivity implements FriendAdapter.ItemClickListener, Observer {
 
     FriendAdapter adapter;
     Button rejectBtn;
@@ -38,7 +41,15 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
     private static final String TAG = "friendActivity";
 
     @Override
+    public void update(Set<String> friends, Set<String> pendingFriends){
+        this.pendingFriends.clear();
+        this.pendingFriends.addAll(friends);
+        recyclerView.setAdapter(adapter);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        user.addObserver(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pending_friend);
 
@@ -85,6 +96,7 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
         Set f = user.getPendingFriends();
         pendingFriends.clear();
         pendingFriends.addAll(f);
+        Collections.sort(pendingFriends);
         recyclerView.setAdapter(adapter);
     }
 

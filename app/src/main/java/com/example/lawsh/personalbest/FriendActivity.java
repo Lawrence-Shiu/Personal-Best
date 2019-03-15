@@ -22,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
+import com.example.lawsh.personalbest.adapters.Observer;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -35,12 +36,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class FriendActivity extends AppCompatActivity implements FriendAdapter.ItemClickListener {
+public class FriendActivity extends AppCompatActivity implements FriendAdapter.ItemClickListener, Observer {
 
     FriendAdapter adapter;
     Button addFriendBtn;
@@ -59,7 +61,15 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     private static final String TAG = "friendActivity";
 
     @Override
+    public void update(Set<String> friends, Set<String> pendingFriends){
+        this.friends.clear();
+        this.friends.addAll(friends);
+        recyclerView.setAdapter(adapter);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        user.addObserver(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
 
@@ -125,6 +135,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         Set f = user.getFriends();
         friends.clear();
         friends.addAll(f);
+        Collections.sort(friends);
         recyclerView.setAdapter(adapter);
     }
 
@@ -148,7 +159,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         if(!checkUser(name))
             notValidFriend();
         user.pendFriend(name);
-        show();
+        //show();
     }
 
     public void notValidFriend(){

@@ -336,14 +336,17 @@ public class MainActivity extends AppCompatActivity {
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
         Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
-        Set<String> pendingFriends = prefs.getStringSet("pending_friends", new HashSet<String>());
+        //Set<String> pendingFriends = prefs.getStringSet("pending_friends", new HashSet<String>());
+        //Set<String> friends = new HashSet<>();
+        Set<String> pendingFriends = new HashSet<>();
+        //editor.putStringSet("pending_friends", pendingFriends).apply();
 
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
          * TODO: id isnt working, hardcoded values
          **/
 
-        Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
+        Log.e("PendingFriendActivity", "Not null ID in initializeUser");
         // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
          //       height, currentGoal, currentSteps, prefs, friends);
         user = User.getInstance();
@@ -351,21 +354,21 @@ public class MainActivity extends AppCompatActivity {
         //user.setEmail(authenticationAdapter.getAccount().getEmail());
 
         user.setEmail("juy103@ucsd.edu");
-        user.setId("jun");
+        user.setId("jusldfj");
         user.setPref(prefs);
         user.setHeight(height);
         user.setPref(prefs);
+
         /*
-        if(map.get("id") != null) {
+        //if(map.get("id") != null) {
             user.setGoal((Integer) map.get("currentGoal"));
             user.setSteps((Integer) map.get("stepsTaken"));
             user.setFriends(user.getFriends());
             user.setPendingFriends(user.getPendingFriends());
-        }else {*/
+        //}else {*/
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
         user.setFriends(friends);
-        user.setPendingFriends(pendingFriends);
         acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -383,7 +386,9 @@ public class MainActivity extends AppCompatActivity {
         ProgressDialog mProgress = new ProgressDialog(this);
         mProgress.setCanceledOnTouchOutside(false);
         mProgress.show();
-        acctFirebase.getDatabase(mProgress);
+        acctFirebase.getDatabase("users", mProgress, 0);
+        mProgress.show();
+        acctFirebase.getDatabase("requests", mProgress, 1);
     }
 
     public void initializeUiValues() {

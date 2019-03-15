@@ -1,7 +1,5 @@
 package com.example.lawsh.personalbest.adapters;
 
-import android.util.Log;
-
 import com.example.lawsh.personalbest.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -35,6 +33,7 @@ public class FirestoreAdapter {
     }
 
     public void updateDatabase(User user, OnSuccessListener<Void> successListener, OnFailureListener failureListener) {
+        System.out.println(user.getId());
         fstore.collection("users").document(user.getId()).set(user.toMap()).addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }

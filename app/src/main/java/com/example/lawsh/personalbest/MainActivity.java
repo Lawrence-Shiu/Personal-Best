@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private String PASSIVE_KEY = "PASSIVE_KEY";
     private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     public static final int REQ_CODE = 233;
+    public final int RC_SIGN_IN = 1;
 
 
     //private static final String TAG = "mainActivity";
@@ -98,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
 
     private FirestoreAdapter acctFirebase;
     private AuthenticationAdapter authenticationAdapter;
+    private GoogleSignInOptions gso;
+    private GoogleApiClient client;
 
     private String dayOfTheWeek;
     private FitnessService fitnessService;
@@ -105,15 +108,8 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences.Editor editor;
     private SimpleDateFormat sdf;
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.d("MainActivity", "Before Sign in");
-        signIn();
-        initializeUser();
-    }
 
-    @Override
+
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -133,30 +129,14 @@ public class MainActivity extends AppCompatActivity {
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id)) //don't worry about this "error"
-                .requestEmail()
-                .requestId()
-                .build();
 
-        GoogleApiClient client =new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult connectionResult) {
-                        Log.d("MainActivity", "Connection Failed");
-                    }
-                })
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
 
         //Get the date
         sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
         dayOfTheWeek = sdf.format(d);
 
-        // go to set up screen
-        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
-        startActivityForResult(setup, REQ_CODE);
+
         createNotificationChannel();
 
         // Defines UI elements by resource id
@@ -228,8 +208,28 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        fitnessService.setup();
-        authenticationAdapter = new AuthenticationAdapter(this, gso,client);
+
+
+        authenticationAdapter = AuthenticationAdapter.getInstance();
+        if(authenticationAdapter.getAccount() == null) {
+            gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_client_id)) //don't worry about this "error"
+                    .requestEmail()
+                    .requestId()
+                    .build();
+
+            client = new GoogleApiClient.Builder(this)
+                    .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                        @Override
+                        public void onConnectionFailed(ConnectionResult connectionResult) {
+                            Log.d("MainActivity", "Connection Failed");
+                        }
+                    })
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .build();
+            signIn();
+        }
+
     }
 
     /*
@@ -282,11 +282,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d("MainActivity", "Inside onActivityResult");
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
-                initializeUser();
+
                                      
             }
+            initializeUser();
             initializeUiValues();
 
             new Thread(new Runnable() {
@@ -302,23 +304,35 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             });
+
+        } else if(requestCode == RC_SIGN_IN) {
+            authenticationAdapter.firebaseAuth(data,new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        authenticationAdapter
+                                .setCurrentUser(FirebaseAuth.getInstance()
+                                        .getCurrentUser());
+                        initializeUser();
+                        // go to set up screen
+                        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
+                        startActivityForResult(setup, REQ_CODE);
+                        fitnessService.setup();
+                    } else {
+                        Log.d("MainActivity", "Auth failed");
+                    }
+
+                }
+            });
+
         }
     }
 
     private void signIn() {
-        authenticationAdapter.firebaseAuth(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(Task<AuthResult> task) {
-                Log.d("MainActivity", "After Sign in");
-                if (task.isSuccessful()) {
-                    authenticationAdapter
-                            .setCurrentUser(FirebaseAuth.getInstance()
-                                    .getCurrentUser());
-                } else {
-                    Log.d("MainActivity", "Auth failed");
-                }
-            }
-        });
+
+        Intent signInIntent = GoogleSignIn.getClient(this, gso).getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+
     }
 
     public void initializeUser() {
@@ -331,10 +345,9 @@ public class MainActivity extends AppCompatActivity {
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
          **/
+        authenticationAdapter.setmGoogleApiClient(this, gso, client);
 
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
-        // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
-         //       height, currentGoal, currentSteps, prefs, friends);
         user = User.getInstance();
         user.setPref(prefs);
         user.setId(authenticationAdapter.getAccount().getId());

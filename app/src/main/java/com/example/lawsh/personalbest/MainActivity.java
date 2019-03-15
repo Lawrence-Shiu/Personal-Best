@@ -31,6 +31,7 @@ import com.example.lawsh.personalbest.fitness.FitnessService;
 import com.example.lawsh.personalbest.fitness.FitnessServiceFactory;
 import com.example.lawsh.personalbest.fitness.GoogleFitAdapter;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -95,20 +96,14 @@ public class MainActivity extends AppCompatActivity {
 
     private FirestoreAdapter acctFirebase;
     private AuthenticationAdapter authenticationAdapter;
+    private GoogleSignInOptions gso;
+    private GoogleApiClient client;
 
     private String dayOfTheWeek;
     private FitnessService fitnessService;
     private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
     private SimpleDateFormat sdf;
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if(authenticationAdapter.getCurrentUser() == null) {
-            signIn();
-        }
-    }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -130,33 +125,13 @@ public class MainActivity extends AppCompatActivity {
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id)) //don't worry about this "error"
-                .requestEmail()
-                .requestId()
-                .build();
-
-        GoogleApiClient client =new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult connectionResult) {
-                        Log.d("MainActivity", "Connection Failed");
-                    }
-                })
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        authenticationAdapter = new AuthenticationAdapter(this, gso,client);
-
-        initializeUser();
 
         //Get the date
         sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
         dayOfTheWeek = sdf.format(d);
 
-        // go to set up screen
-        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
-        startActivityForResult(setup, REQ_CODE);
+
         createNotificationChannel();
 
         // Defines UI elements by resource id
@@ -228,7 +203,26 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        fitnessService.setup();
+
+        authenticationAdapter = AuthenticationAdapter.getInstance();
+        if(authenticationAdapter.getCurrentUser() == null) {
+            gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_client_id)) //don't worry about this "error"
+                    .requestEmail()
+                    .requestId()
+                    .build();
+
+            client = new GoogleApiClient.Builder(this)
+                    .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                        @Override
+                        public void onConnectionFailed(ConnectionResult connectionResult) {
+                            Log.d("MainActivity", "Connection Failed");
+                        }
+                    })
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .build();
+            signIn();
+        }
     }
 
     /*
@@ -281,11 +275,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d("MainActivity", "Inside onActivityResult");
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
-                initializeUser();
+
                                      
             }
+            initializeUser();
             initializeUiValues();
 
             new Thread(new Runnable() {
@@ -309,16 +305,22 @@ public class MainActivity extends AppCompatActivity {
                         authenticationAdapter
                                 .setCurrentUser(FirebaseAuth.getInstance()
                                         .getCurrentUser());
+                        initializeUser();
+                        // go to set up screen
+                        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
+                        startActivityForResult(setup, REQ_CODE);
+                        fitnessService.setup();
                     } else {
                         Log.d("MainActivity", "Auth failed");
                     }
+
                 }
             });
         }
     }
 
     private void signIn() {
-        Intent signInIntent = authenticationAdapter.getGsc().getSignInIntent();
+        Intent signInIntent = GoogleSignIn.getClient(this, gso).getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
@@ -332,17 +334,16 @@ public class MainActivity extends AppCompatActivity {
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
          **/
+        authenticationAdapter.setmGoogleApiClient(this, gso, client);
 
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
-        // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
-         //       height, currentGoal, currentSteps, prefs, friends);
         user = User.getInstance();
+        user.setPref(prefs);
         user.setId(authenticationAdapter.getAccount().getId());
         user.setEmail(authenticationAdapter.getAccount().getEmail());
         user.setHeight(height);
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
-        user.setPref(prefs);
         user.setFriends(friends);
 
         acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {

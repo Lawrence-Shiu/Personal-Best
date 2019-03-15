@@ -28,33 +28,36 @@ import static android.provider.Settings.System.getString;
 
 public class AuthenticationAdapter {
 
-    private Context context;
+    private static AuthenticationAdapter authenticationAdapter = new AuthenticationAdapter();
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
-    private GoogleSignInOptions gso;
     private GoogleSignInAccount gsa;
     private GoogleSignInClient gsc;
     private GoogleApiClient mGoogleApiClient;
 
-    public AuthenticationAdapter(Context context, GoogleSignInOptions gso, GoogleApiClient client) {
-        this.context = context;
-        this.gso = gso;
-        gsc = GoogleSignIn.getClient(context, gso);
-        gsa = GoogleSignIn.getLastSignedInAccount(context);
+    private AuthenticationAdapter() {
 
-
-        mGoogleApiClient = client;
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+    }
+    public static AuthenticationAdapter getInstance(){
+        return authenticationAdapter;
+    }
+
+    public void setmGoogleApiClient(Context context, GoogleSignInOptions gso, GoogleApiClient client)
+    {
+        gsc = GoogleSignIn.getClient(context, gso);
+        gsa = GoogleSignIn.getLastSignedInAccount(context);
+        mGoogleApiClient = client;
     }
 
     public void firebaseAuth(Intent data, OnCompleteListener<AuthResult> completeListener) {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
         try {
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            firebaseAuthWithGoogle(account, completeListener);
+            gsa = task.getResult(ApiException.class);
+            firebaseAuthWithGoogle(gsa, completeListener);
         } catch (ApiException e) {
             e.printStackTrace();
         }

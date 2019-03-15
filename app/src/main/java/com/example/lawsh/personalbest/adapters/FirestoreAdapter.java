@@ -1,11 +1,25 @@
 package com.example.lawsh.personalbest.adapters;
 
+import android.app.ProgressDialog;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.example.lawsh.personalbest.OnGetDataListener;
 import com.example.lawsh.personalbest.User;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseError;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 public class FirestoreAdapter {
 
@@ -13,6 +27,10 @@ public class FirestoreAdapter {
 
     private FirebaseFirestore fstore;
 
+    private static final String TAG = "PendingFriendActivity";
+
+    Map<String,Object> map;
+    QuerySnapshot qs;
 
     private FirestoreAdapter(){
 
@@ -34,12 +52,67 @@ public class FirestoreAdapter {
         return fireStoreAdapter;
     }
 
-    public void updateDatabase(User user, OnSuccessListener<Void> successListener, OnFailureListener failureListener) {
-        fstore.collection("users").document(user.getId()).set(user.toMap()).addOnSuccessListener(successListener)
+    public void updateDatabase(String email, Map<String,Object> map, OnSuccessListener<Void> successListener, OnFailureListener failureListener) {
+        fstore.collection("users").document(email).set(map).addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }
 
     public FirebaseFirestore getFirestoreInstance() {
         return fstore;
+    }
+
+    public void getDatabase(){
+        CountDownLatch done = new CountDownLatch(1);
+        fstore.collection("users")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            qs = task.getResult();
+                            //progressDialog.dismiss();
+                            Log.d("PendingFriendActivity", "waiting");
+                            done.countDown();
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+        while(!(Thread.interrupted())){
+            try{
+                done.await();
+            }catch(InterruptedException e){
+                Thread.currentThread().interrupt();
+            }
+        }
+
+    }
+
+    public Map<String, Object> getMap(String email){
+        for (QueryDocumentSnapshot document : qs) {
+            Log.d(TAG, document.getId() + " user id: " + email + " => " + document.getData());
+            if(email.equals(document.getId())){
+                map = document.getData();
+                Log.d(TAG, document.getId() + " user id: " + email + " => " + document.getData());
+            }
+        }
+        return map;
+    }
+
+    public void readData(final OnGetDataListener listener) {
+        listener.onStart();
+        fstore.collection("users")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            qs = task.getResult();
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+
     }
 }

@@ -3,6 +3,7 @@ package com.example.lawsh.personalbest;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -47,6 +48,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -334,6 +336,7 @@ public class MainActivity extends AppCompatActivity {
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
         Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
+        Set<String> pendingFriends = prefs.getStringSet("pending_friends", new HashSet<String>());
 
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
@@ -347,26 +350,43 @@ public class MainActivity extends AppCompatActivity {
         //user.setId(authenticationAdapter.getAccount().getId());
         //user.setEmail(authenticationAdapter.getAccount().getEmail());
 
-        user.setEmail("lshiu@ucsd.edu");
-        user.setId("lawrence");
+        user.setEmail("juy103@ucsd.edu");
+        user.setId("jun");
         user.setPref(prefs);
         user.setHeight(height);
         user.setPref(prefs);
-        user.setGoal(currentGoal);
-        user.setSteps(currentSteps);
-        user.setFriends(friends);
 
-        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
+        /*
+        ProgressDialog mProgress = new ProgressDialog(this);
+        mProgress.setCanceledOnTouchOutside(false);
+        mProgress.show();*/
+        acctFirebase.getDatabase();
 
-            }
-        }, new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                Log.w("Firebase", "Error writing document", e);
-            }
-        });
+        Map<String, Object> map = acctFirebase.getMap(user.getId());
+        if(map.get("id") != null) {
+            user.setGoal((Integer) map.get("currentGoal"));
+            user.setSteps((Integer) map.get("stepsTaken"));
+            user.setFriends(user.getFriends());
+            user.setPendingFriends(user.getPendingFriends());
+        }else {
+            user.setGoal(currentGoal);
+            user.setSteps(currentSteps);
+            user.setFriends(friends);
+            user.setPendingFriends(pendingFriends);
+            acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("PendingFriendActivity", user.getEmail() + ", " + user.toMap().toString());
+                }
+            }, new OnFailureListener() {
+                @Override
+                public void onFailure(Exception e) {
+                    Log.d("PendingFriendActivity", "Error writing document", e);
+                }
+            });
+        }
+
+
     }
 
     public void initializeUiValues() {
@@ -384,7 +404,7 @@ public class MainActivity extends AppCompatActivity {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
             user.setSteps(stepCount);
-            acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+            acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
                     Log.d("Firebase", "DocumentSnapshot successfully written!");
@@ -667,7 +687,7 @@ public class MainActivity extends AppCompatActivity {
     public void changeGoal(int newGoal) {
         goalText.setText("Goal: " + newGoal + " steps");
         user.setGoal(newGoal);
-        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+        acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("Firebase", "DocumentSnapshot successfully written!");
@@ -684,7 +704,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void notifyGoalChanged() {
         Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
-        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+        acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("Firebase", "DocumentSnapshot successfully written!");

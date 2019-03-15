@@ -20,7 +20,7 @@ public class FBAdapter implements IDB{
     String TAG = MainActivity.class.getSimpleName();
     //CollectionReference cp;
     String COLLECTION_KEY = "chats";
-    String DOCUMENT_KEY = "chat1";
+    String DOCUMENT_KEY = "";
     String MESSAGES_KEY = "messages";
     String FROM_KEY = "from";
     String TEXT_KEY = "text";
@@ -30,7 +30,8 @@ public class FBAdapter implements IDB{
     String from;
     String topicID;
 
-    public FBAdapter(CollectionReference cp) {
+    public FBAdapter(String docKey, CollectionReference cp) {
+        DOCUMENT_KEY = docKey;
         chat = cp;
     }
 
@@ -90,7 +91,5 @@ public class FBAdapter implements IDB{
     public String getTopicID() {
         return DOCUMENT_KEY;
     }
-
-
 
 }

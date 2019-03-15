@@ -46,7 +46,7 @@ public class MessageActivity extends AppCompatActivity {
 
         from = sharedpreferences.getString(FROM_KEY, null);
         FirebaseApp.initializeApp(this);
-        chat = new FBAdapter(FirebaseFirestore.getInstance()
+        chat = new FBAdapter(DOCUMENT_KEY, FirebaseFirestore.getInstance()
                 .collection(COLLECTION_KEY)
                 .document(DOCUMENT_KEY)
                 .collection(MESSAGES_KEY));
@@ -86,9 +86,9 @@ public class MessageActivity extends AppCompatActivity {
         String id = user.getId();
         friendID = intent.getStringExtra("friend_email");
         if(id.compareTo(friendID) > 0) {
-            DOCUMENT_KEY = friendID + "" + id;
+            DOCUMENT_KEY = friendID + "%" + id;
         } else {
-            DOCUMENT_KEY = id + "" + friendID;
+            DOCUMENT_KEY = id + "%" + friendID;
         }
     }
 }

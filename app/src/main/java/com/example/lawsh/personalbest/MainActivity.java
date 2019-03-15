@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         authenticationAdapter = AuthenticationAdapter.getInstance();
-        if(authenticationAdapter.getCurrentUser() == null) {
+        if(authenticationAdapter.getAccount() == null) {
             gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(getString(R.string.default_client_id)) //don't worry about this "error"
                     .requestEmail()
@@ -230,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
             signIn();
         }
 
-        fitnessService.setup();
     }
 
     /*

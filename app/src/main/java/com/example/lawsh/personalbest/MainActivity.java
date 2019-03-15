@@ -3,6 +3,7 @@ package com.example.lawsh.personalbest;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -59,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
     private String PASSIVE_KEY = "PASSIVE_KEY";
     private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     public static final int REQ_CODE = 233;
-    public static final int RC_SIGN_IN = 1;
+    public final int RC_SIGN_IN = 1;
+
 
     //private static final String TAG = "mainActivity";
 
@@ -76,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView velocity;
     private EditText goal;
     private Toolbar mToolbar;
+
 
     private int subGoal;
     private int totalSteps = 0;
@@ -105,7 +108,8 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences.Editor editor;
     private SimpleDateFormat sdf;
 
-    @Override
+
+
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -124,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
         });
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
+
 
 
         //Get the date
@@ -204,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         authenticationAdapter = AuthenticationAdapter.getInstance();
         if(authenticationAdapter.getCurrentUser() == null) {
             gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -223,6 +229,8 @@ public class MainActivity extends AppCompatActivity {
                     .build();
             signIn();
         }
+
+        fitnessService.setup();
     }
 
     /*
@@ -297,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             });
+
         } else if(requestCode == RC_SIGN_IN) {
             authenticationAdapter.firebaseAuth(data,new OnCompleteListener<AuthResult>() {
                 @Override
@@ -316,12 +325,15 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
+
         }
     }
 
     private void signIn() {
+
         Intent signInIntent = GoogleSignIn.getClient(this, gso).getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
+
     }
 
     public void initializeUser() {

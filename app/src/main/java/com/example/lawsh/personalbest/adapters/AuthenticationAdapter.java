@@ -53,6 +53,7 @@ public class AuthenticationAdapter {
         mGoogleApiClient = client;
     }
 
+
     public void firebaseAuth(Intent data, OnCompleteListener<AuthResult> completeListener) {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
         try {
@@ -61,6 +62,7 @@ public class AuthenticationAdapter {
         } catch (ApiException e) {
             e.printStackTrace();
         }
+
     }
 
     public FirebaseUser getCurrentUser() {

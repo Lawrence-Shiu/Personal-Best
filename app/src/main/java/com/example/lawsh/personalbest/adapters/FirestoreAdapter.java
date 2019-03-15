@@ -78,13 +78,14 @@ public class FirestoreAdapter {
                         }
                     }
                 });
+        /*
         while(!(Thread.interrupted())){
             try{
                 done.await();
             }catch(InterruptedException e){
                 Thread.currentThread().interrupt();
             }
-        }
+        }*/
 
     }
 

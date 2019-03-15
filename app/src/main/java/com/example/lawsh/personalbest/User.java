@@ -197,6 +197,7 @@ public class User{
     }
 
     public void removePendingFriend(String friend) {
+        editor.remove(friend).apply();
         pendingFriends.remove(friend);
 
         fAdapter.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
@@ -213,6 +214,7 @@ public class User{
     }
 
     public void pendFriend(String friendEmail){
+        editor.putStringSet("pending_friends", friends).apply();
         Map<String, Object> map = fAdapter.getMap(friendEmail);
         map.put("pendingFriends", email);
 

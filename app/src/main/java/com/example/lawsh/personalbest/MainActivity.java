@@ -355,37 +355,34 @@ public class MainActivity extends AppCompatActivity {
         user.setPref(prefs);
         user.setHeight(height);
         user.setPref(prefs);
-
         /*
-        ProgressDialog mProgress = new ProgressDialog(this);
-        mProgress.setCanceledOnTouchOutside(false);
-        mProgress.show();*/
-        acctFirebase.getDatabase();
-
-        Map<String, Object> map = acctFirebase.getMap(user.getId());
         if(map.get("id") != null) {
             user.setGoal((Integer) map.get("currentGoal"));
             user.setSteps((Integer) map.get("stepsTaken"));
             user.setFriends(user.getFriends());
             user.setPendingFriends(user.getPendingFriends());
-        }else {
-            user.setGoal(currentGoal);
-            user.setSteps(currentSteps);
-            user.setFriends(friends);
-            user.setPendingFriends(pendingFriends);
-            acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d("PendingFriendActivity", user.getEmail() + ", " + user.toMap().toString());
-                }
-            }, new OnFailureListener() {
-                @Override
-                public void onFailure(Exception e) {
-                    Log.d("PendingFriendActivity", "Error writing document", e);
-                }
-            });
-        }
+        }else {*/
+        user.setGoal(currentGoal);
+        user.setSteps(currentSteps);
+        user.setFriends(friends);
+        user.setPendingFriends(pendingFriends);
+        acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("PendingFriendActivity", user.getEmail() + ", " + user.toMap().toString());
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("PendingFriendActivity", "Error writing document", e);
+            }
+        });
+        //}
 
+        acctFirebase.getDatabase();
+        ProgressDialog mProgress = new ProgressDialog(this);
+        mProgress.setCanceledOnTouchOutside(false);
+        mProgress.show();
 
     }
 

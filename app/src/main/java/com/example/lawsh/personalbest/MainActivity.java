@@ -347,8 +347,8 @@ public class MainActivity extends AppCompatActivity {
         //user.setId(authenticationAdapter.getAccount().getId());
         //user.setEmail(authenticationAdapter.getAccount().getEmail());
 
-        user.setEmail("lshiu@ucsd.edu");
-        user.setId("lawrence");
+        user.setEmail("chukkabruh@gmail.com");
+        user.setId("tim");
         user.setPref(prefs);
         user.setHeight(height);
         user.setPref(prefs);

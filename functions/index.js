@@ -25,7 +25,7 @@ exports.sendChatNotifications = functions.firestore
        var message = {
          notification: {
            title: document.from + ' sent you a message',
-           body: document.text
+           body: document.text,
            click_action: 'OPEN_ACTIVITY_NOTE'
          },
          topic: context.params.chatId

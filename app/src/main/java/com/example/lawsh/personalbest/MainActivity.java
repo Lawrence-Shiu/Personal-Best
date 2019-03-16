@@ -109,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDateFormat sdf;
 
 
-
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -129,8 +128,6 @@ public class MainActivity extends AppCompatActivity {
         // create google fit adapter
         fitnessService = FitnessServiceFactory.create(fitnessServiceKey, this);
 
-
-
         //Get the date
         sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
@@ -138,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         createNotificationChannel();
+
 
         // Defines UI elements by resource id
         mToolbar = findViewById(R.id.toolbar);
@@ -184,8 +182,10 @@ public class MainActivity extends AppCompatActivity {
         friendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                startFriendActivity();
+                Intent friendActivity = new Intent(MainActivity.this, FriendActivity.class);
+                startActivity(friendActivity);
             }
+
         });
 
         fitBtn.setOnClickListener(new View.OnClickListener() {
@@ -240,6 +240,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void startFriendActivity(){
         Intent activity = new Intent(MainActivity.this, FriendActivity.class);
+        activity.putExtra("user_email", user.getEmail());
+        activity.putExtra("user_id", user.getId());
         startActivity(activity);
     }
 
@@ -286,7 +288,6 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == REQ_CODE) {
             if(resultCode == Activity.RESULT_OK) {
 
-                                     
             }
             initializeUser();
             initializeUiValues();
@@ -344,6 +345,7 @@ public class MainActivity extends AppCompatActivity {
 
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
+         * TODO: id isnt working, hardcoded values
          **/
         authenticationAdapter.setmGoogleApiClient(this, gso, client);
 
@@ -353,6 +355,7 @@ public class MainActivity extends AppCompatActivity {
         user.setId(authenticationAdapter.getAccount().getId());
         user.setEmail(authenticationAdapter.getAccount().getEmail());
         user.setHeight(height);
+        user.setPref(prefs);
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
         user.setFriends(friends);

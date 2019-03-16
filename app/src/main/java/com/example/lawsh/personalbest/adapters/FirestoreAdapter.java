@@ -5,12 +5,21 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Map;
 
 public class FirestoreAdapter {
 
     private static FirestoreAdapter fireStoreAdapter = new FirestoreAdapter();
 
     private FirebaseFirestore fstore;
+
+
+    private static final String TAG = "PendingFriendActivity";
+
+    Map<String,Object> map;
+    QuerySnapshot[] qs = new QuerySnapshot[2];
 
 
     private FirestoreAdapter() {

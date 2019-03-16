@@ -1,20 +1,29 @@
 package com.example.lawsh.personalbest;
 
 import android.content.SharedPreferences;
+import android.nfc.Tag;
+import android.provider.ContactsContract;
 import android.provider.DocumentsContract;
 import android.util.Log;
 
+import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
+import com.example.lawsh.personalbest.adapters.Observer;
+import com.google.android.gms.common.data.DataBufferObserver;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.model.Document;
+import com.google.j2objc.annotations.ObjectiveCName;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class User{
+public class User implements Subject {
     private static final User user = new User();
     private String id;
     private String email;
@@ -26,13 +35,33 @@ public class User{
     private SharedPreferences.Editor editor;
 
     private Set<String> friends;
+    private Set<String> pendingFriends = new HashSet<>();
 
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
 
     private FirebaseFirestore acctFirebase;
+    private FirestoreAdapter fAdapter = FirestoreAdapter.getInstance(false, null);
 
     //other functionality?
+    private List<Observer> observers = new ArrayList<>();
+
+    @Override
+    public void addObserver(Observer ob) {
+        observers.add(ob);
+    }
+
+    @Override
+    public void removeObserver(Observer ob) {
+        observers.remove(ob);
+    }
+
+    @Override
+    public void notifyObserver(){
+        for(Observer ob: observers){
+            ob.update(friends, pendingFriends);
+        }
+    }
 
     //default constructor
     private User() {
@@ -109,12 +138,51 @@ public class User{
 
     public void addFriend(String friend) {
         friends.add(friend);
-        editor.putStringSet("friends", friends).apply();
+       // editor.putStringSet("friends", friends).apply();
+        fAdapter.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                notifyObserver();
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
+
+        Map<String, Object> map = fAdapter.getMap(friend,0);
+        map.put("friends", email);
+
+        fAdapter.updateDatabase(friend,map,new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
     }
 
     public void removeFriend(String friend) {
         friends.remove(friend);
-        editor.remove(friend).apply(); //putStringSet("friends", friends).apply();
+        //editor.remove(friend).apply(); //
+       // editor.putStringSet("friends", friends).apply();
+        fAdapter.getMap(friend,0).put("friends", friends);
+        fAdapter.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                notifyObserver();
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
     }
 
     public void setPref(SharedPreferences pref){
@@ -132,12 +200,104 @@ public class User{
         map.put("currentGoal", currentGoal);
         map.put("activeSteps", totalActiveSteps);
         map.put("friends", friends.toString());
+        //map.put("pendingFriends", pendingFriends.toString());
 
         return map;
     }
 
     public Set<String> getFriends(){
+        Map<String, Object> map = fAdapter.getMap(email,0);
+        String f = (String)map.get("friends");
+        f = f.substring(1,f.length()-1);
+        String[] fr = f.split(",");
+        List<String> fList = new ArrayList<>();
+        for(String str: fr){
+            fList.add(str.trim());
+        }
+        friends.addAll(fList);
         return friends;
+    }
+
+    public void removePendingFriend(String friend) {
+        //editor.remove(friend).apply();
+        Map<String, Object> map = fAdapter.getMap(friend,1);
+        pendingFriends.remove(friend);
+       // editor.putStringSet("pending_friends", friends).apply();
+        map.put("pendingFriends", pendingFriends.toString());
+
+
+        fAdapter.updatePending(user.getEmail(), map, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                notifyObserver();
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
+    }
+
+    public void pendFriend(String friendEmail){
+        Map<String, Object> map = fAdapter.getMap(friendEmail, 1);
+        String str = (String)map.get("pendingFriends");
+        String[] s;
+        if(str == null) {
+            s = new String[0];
+        }
+        else {
+            str = str.substring(1, str.length() - 1);
+            //Log.d("PendingFriendActivity", );
+            s = str.split(",");
+
+        }
+        List<String> tempPend = new ArrayList<>();
+        for(String fr: s) {
+            tempPend.add(fr.trim());
+            Log.d("PendingFriendActivity", fr.trim());
+        }
+        tempPend.add(email);
+        map.put("pendingFriends", tempPend.toString());
+
+        Log.d("PendingFriendActivity", friendEmail + ", " + map.toString());
+        fAdapter.updatePending(friendEmail, map, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                notifyObserver();
+                Log.d("PendingFriendActivity", friendEmail + ", " + map.toString());
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(Exception e) {
+                Log.w("Firebase", "Error writing document", e);
+            }
+        });
+    }
+
+    public Set<String> getPendingFriends(){
+        Map<String, Object> map = fAdapter.getMap(email, 1);
+        String f = (String)map.get("pendingFriends");
+        if(f == null)
+            return new HashSet<>();
+        f = f.substring(1,f.length()-1);
+        String[] fr = f.split(",");
+        List<String> fList = new ArrayList<>();
+        for(String str: fr){
+            fList.add(str.trim());
+        }
+        Log.d("PendingFriendActivity", fList.toString());
+        //for(String str: fList)
+
+            //Log.d("PendingFriendActivity", str);
+
+        //pendingFriends.add(str);
+        pendingFriends.addAll(fList);
+        return pendingFriends;
+    }
+
+    public void setPendingFriends(Set<String> pendingFriends){
+        this.pendingFriends = pendingFriends;
     }
 
 }

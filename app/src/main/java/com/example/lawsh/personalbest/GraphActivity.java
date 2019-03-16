@@ -28,15 +28,17 @@ public class GraphActivity extends AppCompatActivity {
     //        "PASSIVE_STEPS_3", "PASSIVE_STEPS_4", "PASSIVE_STEPS_5", "PASSIVE_STEPS_6"};
     //SharedPreferences pref;
 
-    public int[] active_steps; //SU M TU W TH F SA
-    public int[] passive_steps; //SU M TU W TH F SA
-
-    public int current_goal;
+    private int[] active_steps; //SU M TU W TH F SA
+    private int[] passive_steps; //SU M TU W TH F SA
+    private int current_goal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph);
+
+        //Not sure how to OCP this
+        HorizontalBarChart progress = (HorizontalBarChart) findViewById(R.id.progress_graph);
 
         if(savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -52,15 +54,21 @@ public class GraphActivity extends AppCompatActivity {
         }
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
+        IChart chart = new HorizontalBarChartAdapter(progress);
+        makeToolbar(mToolbar);
+        makeGraph(chart);
+    }
+
+    public void makeToolbar(Toolbar toolbar) {
+        setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Progress Report");
+    }
 
-
-        HorizontalBarChart progress = (HorizontalBarChart) findViewById(R.id.progress_graph);
-
-        drawChart(progress);
+    public void makeGraph(IChart chart) {
+        Graph graph = new GraphBuilder(chart, active_steps, passive_steps, current_goal).build();
+        graph.createGraph();
     }
 
     @Override
@@ -76,61 +84,4 @@ public class GraphActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    private void drawChart(HorizontalBarChart chart) {
-        ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
-        for(int i = 0; i < 7; i++) {
-            entries.add(new BarEntry(i, new float[]{active_steps[i], passive_steps[i] - active_steps[i]}));
-        }
-
-        BarDataSet dataset;
-
-        if(chart.getData() != null && chart.getData().getDataSetCount() > 0) {
-            dataset = (BarDataSet) chart.getData().getDataSetByIndex(0);
-            dataset.setValues(entries);
-            chart.getData().notifyDataChanged();
-            chart.notifyDataSetChanged();
-        } else {
-            dataset = new BarDataSet(entries, "");
-            dataset.setDrawIcons(false);
-            dataset.setColors(getColors());
-            dataset.setStackLabels(new String[]{"Active", "Passive"});
-
-            ArrayList<IBarDataSet> datasets = new ArrayList<>();
-            datasets.add(dataset);
-
-            BarData data = new BarData(datasets);
-            data.setValueFormatter(new StackedValueFormatter(false, "", 1));
-            data.setValueTextColor(Color.WHITE);
-
-            chart.setData(data);
-        }
-
-        LimitLine goalLine = new LimitLine(current_goal, "Current Goal");
-        goalLine.setLineColor(Color.BLACK);
-        goalLine.setLineWidth(4);
-
-        chart.getAxisLeft().addLimitLine(goalLine);
-
-        chart.setFitBars(true);
-        chart.invalidate();
-    }
-
-    private int[] getColors() {
-        int[] colors = new int[2];
-        colors[0] = Color.RED; //passive
-        colors[1] = Color.GREEN; //passive
-
-        return colors;
-    }
-
-    //public void setSteps(int[] active, int[] passive) {
-    //    active_steps = active;
-    //    passive_steps = passive;
-   // }
-
-    /* private void endActivity() {
-        finish();
-    }
-    */
 }

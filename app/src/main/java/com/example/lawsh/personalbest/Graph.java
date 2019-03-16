@@ -42,7 +42,7 @@ public class Graph {
     private void setChartData() {
         ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
         for(int i = 0; i < 7; i++) {
-            entries.add(new BarEntry(i, new float[]{active_steps[i], passive_steps[i] - active_steps[i]}));
+            entries.add(new BarEntry(i, new float[]{ passive_steps[i] - active_steps[i], passive_steps[i]}));
 
             //Get the maximum point reading, for setting X axis limits
             if(passive_steps[i] > maxStepValue) {
@@ -61,14 +61,14 @@ public class Graph {
             dataset = new BarDataSet(entries, "");
             dataset.setDrawIcons(false);
             dataset.setColors(getColors(Color.RED, Color.GREEN));
-            dataset.setStackLabels(new String[]{"Active", "Passive"});
+            dataset.setStackLabels(new String[]{"Passive", "Active"});
 
             ArrayList<IBarDataSet> datasets = new ArrayList<>();
             datasets.add(dataset);
 
             BarData data = new BarData(datasets);
             data.setValueFormatter(new StackedValueFormatter(false, "", 1));
-            data.setValueTextColor(Color.WHITE);
+            data.setValueTextColor(Color.BLACK);
 
             chart.setData(data);
         }

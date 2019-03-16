@@ -13,6 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.lawsh.personalbest.R;
+import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
+import com.example.lawsh.personalbest.adapters.IDatabase;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -30,6 +32,10 @@ public class MessageActivity extends AppCompatActivity {
     String FROM_KEY = "from";
     String TEXT_KEY = "text";
     String TIMESTAMP_KEY = "timestamp";
+
+    private String ACTIVE_KEY = "ACTIVE_STEPS";
+    private String PASSIVE_KEY = "PASSIVE_KEY";
+
     public SharedPreferences sharedpreferences;
     IDB chat;
     String from;
@@ -59,7 +65,10 @@ public class MessageActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_send).setOnClickListener(view -> sendMessage());
         findViewById(R.id.back_btn).setOnClickListener(view -> finish());
-        findViewById(R.id.friend_prog_button).setOnClickListener(view -> showFriendProgress());
+        findViewById(R.id.friend_prog_button).setOnClickListener(view -> {
+            Map<String, Object> map = FirestoreAdapter.getInstance(false, FirebaseFirestore.getInstance()).getMap(friendID, 0);
+            showFriendProgress(map, intent.getStringExtra("friend_email"));
+        });
 
         TextView nameView = findViewById((R.id.user_name));
         from = user.getId();
@@ -67,13 +76,23 @@ public class MessageActivity extends AppCompatActivity {
         sharedpreferences.edit().putString(FROM_KEY, from).apply();
     }
 
-    private void showFriendProgress() {
-        int[] active_steps = getFriendActiveProgress()
-    }
+    public void showFriendProgress(Map<String, Object> map, String friendID) {
+        int[] friend_active = new int[30];
+        int[] friend_passive = new int[30];
 
-    private void getFriendActiveProgress() {
-        friendID = intent.getStringExtra("friend_email");
+        for(int i = 0; i < Math.min(map.size(), 30); i++) {
+            friend_active[i] = Integer.parseInt((String)map.get(i + ACTIVE_KEY));
+            friend_passive[i] = Integer.parseInt((String)map.get(i + PASSIVE_KEY));
+        }
 
+        int friend_goal = Integer.parseInt((String)map.get("currentGoal"));
+
+        Intent prog = new Intent(MessageActivity.this, GraphActivity.class);
+
+        prog.putExtra("ACTIVE_STEPS", friend_active);
+        prog.putExtra("PASSIVE_STEPS", friend_passive);
+        prog.putExtra("CURRENT_GOAL", friend_goal);
+        startActivity(prog);
     }
 
     private void sendMessage() {

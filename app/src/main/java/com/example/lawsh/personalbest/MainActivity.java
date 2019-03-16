@@ -290,8 +290,15 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_progress) {
             Intent prog = new Intent(MainActivity.this, GraphActivity.class);
 
-            prog.putExtra("ACTIVE_STEPS", active_steps);
-            prog.putExtra("PASSIVE_STEPS", passive_steps);
+            int[] passiveToShow = new int[7];
+            int[] activeToShow = new int[7];
+            for(int i = 29; i > 22; i--) {
+                passiveToShow[29 - i] = passive_steps[i];
+                activeToShow[29 - i] = active_steps[i];
+            }
+
+            prog.putExtra("ACTIVE_STEPS", activeToShow);
+            prog.putExtra("PASSIVE_STEPS", passiveToShow);
             prog.putExtra("CURRENT_GOAL", prefs.getInt("goal", 5000));
             prog.putExtra("DAY_OF_WEEK", dayOfTheWeek);
             startActivity(prog);
@@ -370,6 +377,8 @@ public class MainActivity extends AppCompatActivity {
         } else if (dayOfYear - lastDateOpened < 0) {
             daysPassed = 365 + dayOfYear - lastDateOpened;
             resetStepsBecauseDayHasPassed();
+        } else {
+            passive_steps[29] = currentSteps;
         }
 
         editor.putInt("DAY", dayOfYear);
@@ -424,6 +433,8 @@ public class MainActivity extends AppCompatActivity {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
             user.setSteps(stepCount);
+            passive_steps[29] = (int) stepCount;
+            user.setRecentActivity(passive_steps, active_steps);
             acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
@@ -496,6 +507,8 @@ public class MainActivity extends AppCompatActivity {
     public void resetActiveSteps(){
         oldDay = prefs.getString("DOW","");
         if(dayOfTheWeek != oldDay) {
+            user.setRecentActivity(passive_steps, active_steps);
+            active_steps[29] += activeSteps;
             activeSteps = 0;
             editor.putInt(ACTIVE_KEY, activeSteps);
             oldDay = dayOfTheWeek;

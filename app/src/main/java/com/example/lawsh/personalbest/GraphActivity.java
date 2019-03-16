@@ -29,10 +29,9 @@ public class GraphActivity extends AppCompatActivity {
     //        "PASSIVE_STEPS_3", "PASSIVE_STEPS_4", "PASSIVE_STEPS_5", "PASSIVE_STEPS_6"};
     //SharedPreferences pref;
 
-    private int[] active_steps; //SU M TU W TH F SA
-    private int[] passive_steps; //SU M TU W TH F SA
+    private int[] active_steps;
+    private int[] passive_steps;
     private int current_goal;
-    private String dayOfWeek;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,18 +44,19 @@ public class GraphActivity extends AppCompatActivity {
         if(savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
-                active_steps = new int[]{0,0,0,0,0,0,0};
-                passive_steps = new int[]{0,0,0,0,0,0,0};
+                active_steps = new int[30];
+                passive_steps = new int[30];
+                for(int i = 0; i < 30; i++) {
+                    active_steps[i] = 0;
+                    passive_steps[i] = 0;
+                }
                 current_goal = 5000;
-                dayOfWeek = "Sunday";
             } else {
                 active_steps = extras.getIntArray("ACTIVE_STEPS");
                 passive_steps = extras.getIntArray("PASSIVE_STEPS");
                 current_goal = extras.getInt("CURRENT_GOAL");
-                dayOfWeek = extras.getString("DAY_OF_WEEK");
             }
         }
-        Log.d("GraphActivity", dayOfWeek);
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         IChart chart = new HorizontalBarChartAdapter(progress);

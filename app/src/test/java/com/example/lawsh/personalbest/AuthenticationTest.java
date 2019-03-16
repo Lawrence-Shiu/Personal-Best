@@ -34,6 +34,7 @@ public class AuthenticationTest {
     private Context context = Mockito.mock(Context.class);
     private GoogleSignInOptions gso = Mockito.mock(GoogleSignInOptions.class);
     private GoogleApiClient client = Mockito.mock(GoogleApiClient.class);
+    private Task firebaseSignIn = Mockito.mock(Task.class);;
 
     private GoogleSignInClient gsc = Mockito.mock(GoogleSignInClient.class);
     private GoogleSignInAccount gsa = Mockito.mock(GoogleSignInAccount.class);
@@ -63,11 +64,11 @@ public class AuthenticationTest {
 
         Mockito.when(GoogleAuthProvider.getCredential(id,null)).thenReturn(cred);
 
-        Task firebaseSignIn = Mockito.mock(Task.class);
         Mockito.when(mAuth.signInWithCredential(cred)).thenReturn(firebaseSignIn);
         Mockito.when(firebaseSignIn.addOnCompleteListener(compListener)).thenReturn(firebaseSignIn);
 
-        auth = new AuthenticationAdapter(context, gso, client);
+        auth = AuthenticationAdapter.getInstance();
+        auth.setmGoogleApiClient(context, gso, client);
     }
 
     @Test

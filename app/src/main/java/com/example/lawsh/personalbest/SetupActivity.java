@@ -1,5 +1,6 @@
 package com.example.lawsh.personalbest;
 
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +8,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
 
 public class SetupActivity extends AppCompatActivity {
 

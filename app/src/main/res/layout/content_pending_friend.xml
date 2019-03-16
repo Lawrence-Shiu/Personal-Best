@@ -7,9 +7,9 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".FriendActivity"
+    tools:context=".PendingFriendActivity"
     android:id="@+id/my_linear_layout"
-    tools:showIn="@layout/activity_friend">
+    tools:showIn="@layout/activity_pending_friend">
 
 
 
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
         android:paddingTop="10dp"
-        android:text="Friends"
+        android:text="Pending Friends"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.409"
@@ -27,46 +27,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.319" />
 
-
-    <LinearLayout
-        android:id="@+id/LinearLayout02"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
     <Button
-        android:id="@+id/addFriend"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#03A9F4"
-        android:text="  Add Friends  "
-        android:textSize="10sp"
-        android:layout_weight="1"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/deleteFriend"
+        android:id="@+id/reject"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="#E91E63"
-        android:layout_weight="1"
-        android:text=" Remove Friends "
-        android:textSize="10sp"/>
-
-    <Button
-        android:id="@+id/pendFriend"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#CEDB47"
-        android:layout_weight="1"
-        android:text=" Pending Friends "
-        android:textSize="10sp"/>
-    </LinearLayout>
+        android:text=" Reject User "
+        android:textSize="20sp"/>
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/my_recycler_view"
+        android:id="@+id/my_recycler_view_pf"
         android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

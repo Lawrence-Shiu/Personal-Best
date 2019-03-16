@@ -49,6 +49,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -341,7 +342,11 @@ public class MainActivity extends AppCompatActivity {
         int height = prefs.getInt("height", 0);
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
-        Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
+        //Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
+        //Set<String> pendingFriends = prefs.getStringSet("pending_friends", new HashSet<String>());
+        Set<String> friends = new HashSet<>();
+        Set<String> pendingFriends = new HashSet<>();
+        //editor.putStringSet("pending_friends", pendingFriends).apply();
 
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
@@ -349,28 +354,51 @@ public class MainActivity extends AppCompatActivity {
          **/
         authenticationAdapter.setmGoogleApiClient(this, gso, client);
 
-        Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
+        Log.e("PendingFriendActivity", "Not null ID in initializeUser");
+        // user = new User( authenticationAdapter.getAccount().getId(),  authenticationAdapter.getAccount().getEmail(),
+         //       height, currentGoal, currentSteps, prefs, friends);
         user = User.getInstance();
+        //user.setId(authenticationAdapter.getAccount().getId());
+        //user.setEmail(authenticationAdapter.getAccount().getEmail());
+
+        user.setEmail("juy103@ucsd.edu");
+        user.setId("jusldfj");
         user.setPref(prefs);
         user.setId(authenticationAdapter.getAccount().getId());
         user.setEmail(authenticationAdapter.getAccount().getEmail());
         user.setHeight(height);
         user.setPref(prefs);
+
+        /*
+        //if(map.get("id") != null) {
+            user.setGoal((Integer) map.get("currentGoal"));
+            user.setSteps((Integer) map.get("stepsTaken"));
+            user.setFriends(user.getFriends());
+            user.setPendingFriends(user.getPendingFriends());
+        //}else {*/
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
         user.setFriends(friends);
-
-        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+        /*
+        acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-
+                Log.d("PendingFriendActivity", user.getEmail() + ", " + user.toMap().toString());
             }
         }, new OnFailureListener() {
             @Override
             public void onFailure(Exception e) {
-                Log.w("Firebase", "Error writing document", e);
+                Log.d("PendingFriendActivity", "Error writing document", e);
             }
-        });
+        });*/
+        //}
+
+        ProgressDialog mProgress = new ProgressDialog(this);
+        mProgress.setCanceledOnTouchOutside(false);
+        mProgress.show();
+        acctFirebase.getDatabase("users", mProgress, 0);
+        mProgress.show();
+        acctFirebase.getDatabase("requests", mProgress, 1);
     }
 
     public void initializeUiValues() {
@@ -388,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
             user.setSteps(stepCount);
-            acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+            acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
                     Log.d("Firebase", "DocumentSnapshot successfully written!");
@@ -671,7 +699,7 @@ public class MainActivity extends AppCompatActivity {
     public void changeGoal(int newGoal) {
         goalText.setText("Goal: " + newGoal + " steps");
         user.setGoal(newGoal);
-        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+        acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("Firebase", "DocumentSnapshot successfully written!");
@@ -688,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void notifyGoalChanged() {
         Toast.makeText(MainActivity.this, "Saved Goal", Toast.LENGTH_SHORT).show();
-        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
+        acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("Firebase", "DocumentSnapshot successfully written!");

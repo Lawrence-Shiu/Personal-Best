@@ -1,5 +1,6 @@
 package com.example.lawsh.personalbest;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -17,9 +18,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
+import com.example.lawsh.personalbest.adapters.Observer;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -33,15 +36,18 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class FriendActivity extends AppCompatActivity implements FriendAdapter.ItemClickListener {
+public class FriendActivity extends AppCompatActivity implements FriendAdapter.ItemClickListener, Observer {
 
     FriendAdapter adapter;
     Button addFriendBtn;
     Button rmFriendBtn;
+    Button pendBtn;
     ArrayList<String> friends;
     RecyclerView recyclerView;
     boolean deleteTrue = false;
@@ -51,11 +57,30 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     String email;
     String id;
+    ProgressDialog mProgress;
+    FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
 
     private static final String TAG = "friendActivity";
 
     @Override
+    public void update(Set<String> friends, Set<String> pendingFriends){
+        this.friends.clear();
+        this.friends.addAll(friends);
+        recyclerView.setAdapter(adapter);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mProgress = new ProgressDialog(this);
+        mProgress.setCanceledOnTouchOutside(false);
+
+        // update pending friends database
+        mProgress.show();
+        FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+        acctFirebase.getDatabase("requests", mProgress, 0);
+
+
+        user.addObserver(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
 
@@ -67,6 +92,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         // set up buttons
         addFriendBtn = findViewById(R.id.addFriend);
         rmFriendBtn = findViewById(R.id.deleteFriend);
+        pendBtn = findViewById(R.id.pendFriend);
 
         addFriendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,24 +116,57 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
             }
         });
 
+        pendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mProgress.show();
+                acctFirebase.getDatabase("users", mProgress, 0);
+                mProgress.show();
+                acctFirebase.getDatabase("requests", mProgress, 1);
+                Intent pendActivity = new Intent(FriendActivity.this, PendingFriendActivity.class);
+                startActivity(pendActivity);
+            }
+        });
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mProgress.setCanceledOnTouchOutside(false);
+                mProgress.show();
+                FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+                acctFirebase.getDatabase("users", mProgress, 0);
+                mProgress.show();
+                acctFirebase.getDatabase("requests", mProgress, 1);
+                finish();
+            }
+        });
+
+        Set f = user.getFriends();
+        friends.clear();
+        friends.addAll(f);
         recyclerView = findViewById(R.id.my_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        Collections.sort(friends);
         adapter = new FriendAdapter(this, friends);
         adapter.setClickListener(this);
         show();
     }
 
     public void show(){
-        Set f = user.getFriends();
-        friends.clear();
-        friends.addAll(f);
+        //fAdapter.getDatabase(user, mProgress);
+        //while(mProgress.isShowing()){}
+
+        //Set f = user.getFriends();
+        //friends.clear();
+        //friends.addAll(f);
+        Collections.sort(friends);
         recyclerView.setAdapter(adapter);
     }
 
     @Override
     public void onItemClick(View view, int position) {
         if(deleteTrue == false) {
-            Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
             startMessageActivity(position);
         }else{
             removeFriend(position);
@@ -118,37 +177,14 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     public void removeFriend(int position){
         String friend = adapter.getItem(position);
         user.removeFriend(friend);
-        fAdapter.updateDatabase(user, new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-
-            }
-        }, new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                Log.w("Firebase", "Error writing document", e);
-            }
-        });
         show();
     }
 
     public void addFriend(String name){
         if(!checkUser(name))
             notValidFriend();
-        friends.add(name);
-        user.addFriend(name);
-        fAdapter.updateDatabase(user, new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-
-            }
-        }, new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                Log.w("Firebase", "Error writing document", e);
-            }
-        });
-        show();
+        user.pendFriend(name);
+        //show();
     }
 
     public void notValidFriend(){

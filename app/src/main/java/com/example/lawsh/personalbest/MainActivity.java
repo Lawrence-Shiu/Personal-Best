@@ -47,6 +47,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
     private String fitnessServiceKey = "GOOGLE_FIT";
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
-    private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    //private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    private int[] dayArray;
+
     public static final int REQ_CODE = 233;
     public final int RC_SIGN_IN = 1;
 
@@ -109,10 +112,21 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences.Editor editor;
     private SimpleDateFormat sdf;
 
+    private Calendar cal;
+    private int dayOfYear;
+
+    private int[] passive_steps;
+    private int[] active_steps;
 
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Create and populate recent activity
+        active_steps = new int[30];
+        passive_steps = new int[30];
+
+        user = User.getInstance();
 
         prefs = getSharedPreferences("PB", Context.MODE_PRIVATE);
         editor = prefs.edit();
@@ -134,9 +148,12 @@ public class MainActivity extends AppCompatActivity {
         Date d = new Date();
         dayOfTheWeek = sdf.format(d);
 
-
         createNotificationChannel();
 
+        // go to set up screen
+        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
+        startActivityForResult(setup, REQ_CODE);
+        fitnessService.setup();
 
         // Defines UI elements by resource id
         mToolbar = findViewById(R.id.toolbar);
@@ -239,6 +256,16 @@ public class MainActivity extends AppCompatActivity {
     }
     */
 
+    //Array rotation utility
+    private void shiftLeft(int[] arr, int numTimes) {
+        for(int i = 0; i < (numTimes > 30 ? 30 : numTimes); i++) {
+            for(int j = 0; j < arr.length - 1; j++) {
+                arr[j] = arr[j + 1];
+            }
+            arr[arr.length - 1] = 0;
+        }
+    }
+
     public void startFriendActivity(){
         Intent activity = new Intent(MainActivity.this, FriendActivity.class);
         activity.putExtra("user_email", user.getEmail());
@@ -263,19 +290,18 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_progress) {
             Intent prog = new Intent(MainActivity.this, GraphActivity.class);
-            int[] active_steps = new int[7];
-            int[] passive_steps = new int[7];
 
-            /* Populate int arrays from SharedPreferences */
-            for(int i = 0; i < active_steps.length; i++){
-                active_steps[i] = prefs.getInt(dayArray[i]+"Active",0);
-                passive_steps[i] = prefs.getInt(dayArray[i]+"Passive",0);
-
+            int[] passiveToShow = new int[7];
+            int[] activeToShow = new int[7];
+            for(int i = 29; i > 22; i--) {
+                passiveToShow[29 - i] = passive_steps[i];
+                activeToShow[29 - i] = active_steps[i];
             }
 
-            prog.putExtra("ACTIVE_STEPS", active_steps);
-            prog.putExtra("PASSIVE_STEPS", passive_steps);
+            prog.putExtra("ACTIVE_STEPS", activeToShow);
+            prog.putExtra("PASSIVE_STEPS", passiveToShow);
             prog.putExtra("CURRENT_GOAL", prefs.getInt("goal", 5000));
+            prog.putExtra("DAY_OF_WEEK", dayOfTheWeek);
             startActivity(prog);
         }
 
@@ -287,9 +313,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d("MainActivity", "Inside onActivityResult");
         if(requestCode == REQ_CODE) {
-            if(resultCode == Activity.RESULT_OK) {
-
-            }
             initializeUser();
             initializeUiValues();
 
@@ -308,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
         } else if(requestCode == RC_SIGN_IN) {
-            authenticationAdapter.firebaseAuth(data,new OnCompleteListener<AuthResult>() {
+            authenticationAdapter.firebaseAuth(data, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(Task<AuthResult> task) {
                     if (task.isSuccessful()) {
@@ -316,10 +339,6 @@ public class MainActivity extends AppCompatActivity {
                                 .setCurrentUser(FirebaseAuth.getInstance()
                                         .getCurrentUser());
                         initializeUser();
-                        // go to set up screen
-                        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
-                        startActivityForResult(setup, REQ_CODE);
-                        fitnessService.setup();
                     } else {
                         Log.d("MainActivity", "Auth failed");
                     }
@@ -331,7 +350,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signIn() {
-
         Intent signInIntent = GoogleSignIn.getClient(this, gso).getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
 
@@ -348,10 +366,37 @@ public class MainActivity extends AppCompatActivity {
         Set<String> pendingFriends = new HashSet<>();
         //editor.putStringSet("pending_friends", pendingFriends).apply();
 
+        /* Populate int arrays from SharedPreferences */
+        for(int i = 0; i < 30; i++){
+            active_steps[i] = prefs.getInt(i + ACTIVE_KEY,0);
+            passive_steps[i] = prefs.getInt(i + PASSIVE_KEY,0);
+        }
+
+        cal = Calendar.getInstance();
+        dayOfYear = cal.get(Calendar.DAY_OF_YEAR);
+        int daysPassed = 0;
+        int lastDateOpened = prefs.getInt("DAY", -1);
+        if(dayOfYear - lastDateOpened > 0) {
+            daysPassed = dayOfYear - lastDateOpened;
+            resetStepsBecauseDayHasPassed();
+        } else if (dayOfYear - lastDateOpened < 0) {
+            daysPassed = 365 + dayOfYear - lastDateOpened;
+            resetStepsBecauseDayHasPassed();
+        } else {
+            passive_steps[29] = currentSteps;
+        }
+
+        editor.putInt("DAY", dayOfYear);
+        shiftLeft(active_steps, daysPassed);
+        shiftLeft(passive_steps, daysPassed);
+
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
          * TODO: id isnt working, hardcoded values
          **/
+        /** Note: That functionality got shelved according to the MS2 rubric
+         *
+         */
         authenticationAdapter.setmGoogleApiClient(this, gso, client);
 
         Log.e("PendingFriendActivity", "Not null ID in initializeUser");
@@ -379,8 +424,9 @@ public class MainActivity extends AppCompatActivity {
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
         user.setFriends(friends);
-        /*
-        acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
+        user.setRecentActivity(passive_steps, active_steps);
+/*
+        acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("PendingFriendActivity", user.getEmail() + ", " + user.toMap().toString());
@@ -391,7 +437,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("PendingFriendActivity", "Error writing document", e);
             }
         });*/
-        //}
 
         ProgressDialog mProgress = new ProgressDialog(this);
         mProgress.setCanceledOnTouchOutside(false);
@@ -416,7 +461,9 @@ public class MainActivity extends AppCompatActivity {
         if(oldTotal != totalSteps) {
             textSteps.setText(String.valueOf(stepCount));
             user.setSteps(stepCount);
-            acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
+            passive_steps[29] = (int) stepCount;
+            user.setRecentActivity(passive_steps, active_steps);
+            acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
                     Log.d("Firebase", "DocumentSnapshot successfully written!");
@@ -488,6 +535,8 @@ public class MainActivity extends AppCompatActivity {
     public void resetActiveSteps(){
         oldDay = prefs.getString("DOW","");
         if(dayOfTheWeek != oldDay) {
+            user.setRecentActivity(passive_steps, active_steps);
+            active_steps[29] += activeSteps;
             activeSteps = 0;
             editor.putInt(ACTIVE_KEY, activeSteps);
             oldDay = dayOfTheWeek;
@@ -495,6 +544,25 @@ public class MainActivity extends AppCompatActivity {
 
             editor.apply();
         }
+    }
+
+    public void resetStepsBecauseDayHasPassed() {
+        shiftLeft(passive_steps, 1);
+        shiftLeft(active_steps, 1);
+
+        passive_steps[29] = totalSteps;
+        active_steps[29] = activeSteps;
+
+        for(int i = 0; i < 30; i++) {
+            editor.putInt(i + PASSIVE_KEY, passive_steps[i]);
+            editor.putInt(i + ACTIVE_KEY, active_steps[i]);
+        }
+
+        totalSteps = 0;
+        activeSteps = 0;
+
+        user.setRecentActivity(passive_steps, active_steps);
+        user.setSteps(totalSteps);
     }
 
     private void createNotificationChannel() {
@@ -548,6 +616,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(String... text){
+            if(dayOfYear != cal.get(Calendar.DAY_OF_YEAR)) {
+                //Day has passed
+                resetStepsBecauseDayHasPassed();
+            }
             int goal = user.getCurrentGoal();
             if(totalSteps >= goal) {
                 goalMessageFirstAppearance = false;

@@ -1,15 +1,20 @@
 package com.example.lawsh.personalbest;
 
 import android.content.SharedPreferences;
+import android.provider.DocumentsContract;
 import android.util.Log;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.model.Document;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class User {
+public class User{
     private static final User user = new User();
     private String id;
     private String email;
@@ -24,6 +29,8 @@ public class User {
 
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
+
+    private FirebaseFirestore acctFirebase;
 
     //other functionality?
 
@@ -100,9 +107,14 @@ public class User {
         this.friends = friends;
     }
 
-    public void addFriend(User friend) {
-        friends.add(friend.getEmail());
+    public void addFriend(String friend) {
+        friends.add(friend);
         editor.putStringSet("friends", friends).apply();
+    }
+
+    public void removeFriend(String friend) {
+        friends.remove(friend);
+        editor.remove(friend).apply(); //putStringSet("friends", friends).apply();
     }
 
     public void setPref(SharedPreferences pref){
@@ -123,4 +135,9 @@ public class User {
 
         return map;
     }
+
+    public Set<String> getFriends(){
+        return friends;
+    }
+
 }

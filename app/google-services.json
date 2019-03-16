@@ -15,7 +15,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "969646063950-6hfl1jo397q0a2vdkieut09b3iqq5vio.apps.googleusercontent.com",
+          "client_id": "969646063950-q86qmsr4oknuvj2khlma4dlj5viv1je0.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.lawsh.personalbest",
@@ -48,7 +48,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "969646063950-2e5dcdvmunigkic84d0oqoe76o7lcotj.apps.googleusercontent.com",
+              "client_id": "969646063950-4hd11d2v2e2hb5q7e29nfeq5ca1c2rko.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

@@ -24,10 +24,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -39,18 +35,17 @@ import java.util.Set;
 
 public class FriendActivity extends AppCompatActivity implements FriendAdapter.ItemClickListener {
 
-    FriendAdapter adapter;
-    Button addFriendBtn;
-    Button rmFriendBtn;
-    ArrayList<String> friends;
-    RecyclerView recyclerView;
-    boolean deleteTrue = false;
-    User user = User.getInstance();
-    FirestoreAdapter fAdapter;
-    FirebaseFirestore fbase;
-    FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    String email;
-    String id;
+    private FriendAdapter adapter;
+    private Button addFriendBtn;
+    private Button rmFriendBtn;
+    private ArrayList<String> friends;
+    private RecyclerView recyclerView;
+    private boolean deleteTrue = false;
+    private User user = User.getInstance();
+    private FirestoreAdapter fAdapter;
+    private FirebaseFirestore fbase;
+    private String email;
+    private String id;
 
     private static final String TAG = "friendActivity";
 
@@ -97,7 +92,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         show();
     }
 
-    public void show(){
+    public void show() {
         Set f = user.getFriends();
         friends.clear();
         friends.addAll(f);
@@ -109,7 +104,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         if(deleteTrue == false) {
             Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
             startMessageActivity(position);
-        }else{
+        } else {
             removeFriend(position);
         }
         show();

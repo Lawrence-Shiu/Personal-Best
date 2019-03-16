@@ -12,21 +12,23 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import java.util.ArrayList;
 
 public class Graph {
-    IChart chart;
-    int[] active_steps;
-    int[] passive_steps;
-    int current_goal;
+    private IChart chart;
+    private int[] active_steps;
+    private int[] passive_steps;
+    private int current_goal;
+    private int maxStepValue;
 
     protected Graph(IChart chart, int[] active_steps, int[] passive_steps, int current_goal) {
         this.chart = chart;
         this.active_steps = active_steps;
         this.passive_steps = passive_steps;
         this.current_goal = current_goal;
+        this.maxStepValue = 0;
     }
 
     public void createGraph() {
         setChartData();
-        chart.draw(current_goal);
+        chart.draw(current_goal, maxStepValue);
     }
 
     private int[] getColors(int activeColor, int passiveColor) {
@@ -41,6 +43,11 @@ public class Graph {
         ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
         for(int i = 0; i < 7; i++) {
             entries.add(new BarEntry(i, new float[]{active_steps[i], passive_steps[i] - active_steps[i]}));
+
+            //Get the maximum point reading, for setting X axis limits
+            if(passive_steps[i] > maxStepValue) {
+                maxStepValue = passive_steps[i];
+            }
         }
 
         BarDataSet dataset;
@@ -65,7 +72,6 @@ public class Graph {
 
             chart.setData(data);
         }
-
     }
 
     public IChart getChart() {

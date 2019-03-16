@@ -113,6 +113,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        user = User.getInstance();
+
         prefs = getSharedPreferences("PB", Context.MODE_PRIVATE);
         editor = prefs.edit();
 
@@ -133,9 +135,12 @@ public class MainActivity extends AppCompatActivity {
         Date d = new Date();
         dayOfTheWeek = sdf.format(d);
 
-
         createNotificationChannel();
 
+        // go to set up screen
+        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
+        startActivityForResult(setup, REQ_CODE);
+        fitnessService.setup();
 
         // Defines UI elements by resource id
         mToolbar = findViewById(R.id.toolbar);
@@ -262,8 +267,8 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_progress) {
             Intent prog = new Intent(MainActivity.this, GraphActivity.class);
-            int[] active_steps = new int[7];
-            int[] passive_steps = new int[7];
+            int[] active_steps = new int[30];
+            int[] passive_steps = new int[30];
 
             /* Populate int arrays from SharedPreferences */
             for(int i = 0; i < active_steps.length; i++){
@@ -272,9 +277,17 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
+            int[] active_steps_for_graph = new int[7];
+            int[] passive_steps_for_graph = new int[7];
+            for(int i = 0; i < 7; i++) {
+                active_steps_for_graph[i] = active_steps[i];
+                passive_steps_for_graph[i] = passive_steps[i];
+            }
+
             prog.putExtra("ACTIVE_STEPS", active_steps);
             prog.putExtra("PASSIVE_STEPS", passive_steps);
             prog.putExtra("CURRENT_GOAL", prefs.getInt("goal", 5000));
+            prog.putExtra("DAY_OF_WEEK", dayOfTheWeek);
             startActivity(prog);
         }
 
@@ -286,9 +299,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d("MainActivity", "Inside onActivityResult");
         if(requestCode == REQ_CODE) {
-            if(resultCode == Activity.RESULT_OK) {
-
-            }
             initializeUser();
             initializeUiValues();
 
@@ -307,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
         } else if(requestCode == RC_SIGN_IN) {
-            authenticationAdapter.firebaseAuth(data,new OnCompleteListener<AuthResult>() {
+            authenticationAdapter.firebaseAuth(data, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(Task<AuthResult> task) {
                     if (task.isSuccessful()) {
@@ -315,10 +325,6 @@ public class MainActivity extends AppCompatActivity {
                                 .setCurrentUser(FirebaseAuth.getInstance()
                                         .getCurrentUser());
                         initializeUser();
-                        // go to set up screen
-                        Intent setup = new Intent(MainActivity.this, SetupActivity.class);
-                        startActivityForResult(setup, REQ_CODE);
-                        fitnessService.setup();
                     } else {
                         Log.d("MainActivity", "Auth failed");
                     }
@@ -347,10 +353,12 @@ public class MainActivity extends AppCompatActivity {
          * TODO: the shared preference because the user might switch phone
          * TODO: id isnt working, hardcoded values
          **/
+        /** Note: That functionality got shelved according to the MS2 rubric
+         *
+         */
         authenticationAdapter.setmGoogleApiClient(this, gso, client);
 
         Log.d("USER_ID_CHECK", "Not null ID in initializeUser");
-        user = User.getInstance();
         user.setPref(prefs);
         user.setId(authenticationAdapter.getAccount().getId());
         user.setEmail(authenticationAdapter.getAccount().getEmail());

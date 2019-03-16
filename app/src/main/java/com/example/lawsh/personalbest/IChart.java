@@ -7,5 +7,5 @@ public interface IChart {
     BarData getData();
     void setData(BarData data);
     void notifyDataSetChanged();
-    void draw(int current_goal);
+    void draw(int current_goal, int maxStepValue);
 }

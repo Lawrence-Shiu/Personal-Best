@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,6 +58,7 @@ public class MessageActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_send).setOnClickListener(view -> sendMessage());
         findViewById(R.id.back_btn).setOnClickListener(view -> finish());
+        findViewById(R.id.friend_prog_button).setOnClickListener(view -> showFriendProgress());
 
         TextView nameView = findViewById((R.id.user_name));
         from = user.getId();
@@ -83,12 +85,28 @@ public class MessageActivity extends AppCompatActivity {
     }
 
     public void buildDocKey() {
-        String id = user.getId();
+        String id = user.getEmail();
         friendID = intent.getStringExtra("friend_email");
+
+        String cleanedFriendID = cleanEmail(friendID);
+        String cleanedOwnID = cleanEmail(id);
+
         if(id.compareTo(friendID) > 0) {
-            DOCUMENT_KEY = friendID + "%" + id;
+            DOCUMENT_KEY = cleanedFriendID + "%" + cleanedOwnID;
         } else {
-            DOCUMENT_KEY = id + "%" + friendID;
+            DOCUMENT_KEY = cleanedOwnID + "%" + cleanedFriendID;
         }
+    }
+
+    public String cleanEmail(String str) {
+        char[] arrayToClean = str.toCharArray();
+        for(int i = 0; i < arrayToClean.length; i++) {
+            char c = arrayToClean[i];
+            if("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNPOPQRSTUVWXYZ1234567890_.%~".indexOf(c) == -1) {
+                Log.d("StringClean", String.valueOf(c));
+                arrayToClean[i] = '_';
+            }
+        }
+        return String.valueOf(arrayToClean);
     }
 }

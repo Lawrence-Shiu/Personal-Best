@@ -30,7 +30,7 @@ public class HorizontalBarChartAdapter implements IChart {
     }
 
     @Override
-    public void draw(int current_goal) {
+    public void draw(int current_goal, int maxStepValue) {
         LimitLine goalLine = new LimitLine(current_goal, "Current Goal");
         goalLine.setLineColor(Color.BLACK);
         goalLine.setLineWidth(4);

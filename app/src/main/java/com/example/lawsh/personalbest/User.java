@@ -25,6 +25,9 @@ public class User{
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
 
+    private int[] passive_steps;
+    private int[] active_steps;
+
     private Set<String> friends;
 
     private String ACTIVE_KEY = "ACTIVE_STEPS";
@@ -86,6 +89,19 @@ public class User{
         stepsTaken = (int) newSteps;
         editor.putInt(PASSIVE_KEY, stepsTaken);
         editor.apply();
+    }
+
+    public void setRecentActivity(int[] passive_steps, int[] active_steps) {
+        this.passive_steps = passive_steps;
+        this.active_steps = active_steps;
+    }
+
+    public int[] getPassiveSteps() {
+        return passive_steps;
+    }
+
+    public int[] getActiveSteps() {
+        return active_steps;
     }
 
     public void addActiveSteps(int newActiveSteps) {

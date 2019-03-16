@@ -4,12 +4,17 @@ import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.lawsh.personalbest.adapters.FirestoreAdapter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+import java.util.HashMap;
 
 public class SetupActivity extends AppCompatActivity {
 
@@ -26,6 +31,29 @@ public class SetupActivity extends AppCompatActivity {
             setResult(RESULT_CANCELED);
             finish();
         }
+
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("id", 0);
+        map.put("email", User.getInstance().getEmail());
+        map.put("height", 0);
+        map.put("stepsTaken", 0);
+        map.put("currentGoal", 5000);
+        map.put("activeSteps", 0);
+        map.put("friends", "[]");
+
+        FirestoreAdapter.getInstance(false, null).
+                updateDatabase(User.getInstance().getEmail(), map, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("PendingFriendActivity", User.getInstance().getEmail() + ", " +
+                        User.getInstance().toMap().toString());
+            }
+            }, new OnFailureListener() {
+                @Override
+                public void onFailure(Exception e) {
+                    Log.d("PendingFriendActivity", "Error writing document", e);
+                }
+        });
 
         Button done = findViewById(R.id.done_button);
         done.setOnClickListener( new View.OnClickListener() {

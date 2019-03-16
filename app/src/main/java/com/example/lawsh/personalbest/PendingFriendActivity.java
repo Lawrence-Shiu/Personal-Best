@@ -46,9 +46,10 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
 
     @Override
     public void update(Set<String> friends, Set<String> pendingFriends){
+        /*
         this.pendingFriends.clear();
         this.pendingFriends.addAll(friends);
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);*/
     }
 
     @Override
@@ -114,6 +115,12 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
     }
 
     public void show(){
+        //Set f = user.getPendingFriends();
+        //pendingFriends.clear();
+        //pendingFriends.addAll(f);
+        for(String p: pendingFriends){
+            Log.d("PendingFriend", p);
+        }
         Collections.sort(pendingFriends);
         recyclerView.setAdapter(adapter);
     }
@@ -125,7 +132,6 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
         }else{
             removeFriend(position);
         }
-        show();
     }
 
     public void removeFriend(int position){

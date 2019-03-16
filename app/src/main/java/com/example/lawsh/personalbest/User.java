@@ -138,6 +138,7 @@ public class User implements Subject {
 
     public void addFriend(String friend) {
         friends.add(friend);
+        friends.remove("");
        // editor.putStringSet("friends", friends).apply();
         fAdapter.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
@@ -208,6 +209,8 @@ public class User implements Subject {
     public Set<String> getFriends(){
         Map<String, Object> map = fAdapter.getMap(email,0);
         String f = (String)map.get("friends");
+        if(f == null)
+            Log.d("PendingFriendsActivity","map.get(\"friends\") is null");
         f = f.substring(1,f.length()-1);
         String[] fr = f.split(",");
         List<String> fList = new ArrayList<>();
@@ -258,6 +261,8 @@ public class User implements Subject {
             Log.d("PendingFriendActivity", fr.trim());
         }
         tempPend.add(email);
+        if(tempPend.get(0) == "")
+            tempPend.remove(0);
         map.put("pendingFriends", tempPend.toString());
 
         Log.d("PendingFriendActivity", friendEmail + ", " + map.toString());
@@ -265,7 +270,7 @@ public class User implements Subject {
             @Override
             public void onSuccess(Void aVoid) {
                 notifyObserver();
-                Log.d("PendingFriendActivity", friendEmail + ", " + map.toString());
+                //Log.d("PendingFriendActivity", friendEmail + ", " + map.toString());
             }
         }, new OnFailureListener() {
             @Override
@@ -276,6 +281,7 @@ public class User implements Subject {
     }
 
     public Set<String> getPendingFriends(){
+
         Map<String, Object> map = fAdapter.getMap(email, 1);
         String f = (String)map.get("pendingFriends");
         if(f == null)
@@ -292,7 +298,9 @@ public class User implements Subject {
             //Log.d("PendingFriendActivity", str);
 
         //pendingFriends.add(str);
+        pendingFriends.clear();
         pendingFriends.addAll(fList);
+
         return pendingFriends;
     }
 

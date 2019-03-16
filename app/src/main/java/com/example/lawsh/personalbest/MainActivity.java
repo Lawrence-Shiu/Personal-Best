@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -361,8 +362,8 @@ public class MainActivity extends AppCompatActivity {
         //user.setId(authenticationAdapter.getAccount().getId());
         //user.setEmail(authenticationAdapter.getAccount().getEmail());
 
-        user.setEmail("juy103@ucsd.edu");
-        user.setId("jusldfj");
+        //user.setEmail("juy103@ucsd.edu");
+        //user.setId("jusldfj");
         user.setPref(prefs);
         user.setId(authenticationAdapter.getAccount().getId());
         user.setEmail(authenticationAdapter.getAccount().getEmail());
@@ -379,26 +380,19 @@ public class MainActivity extends AppCompatActivity {
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
         user.setFriends(friends);
-        /*
-        acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d("PendingFriendActivity", user.getEmail() + ", " + user.toMap().toString());
-            }
-        }, new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                Log.d("PendingFriendActivity", "Error writing document", e);
-            }
-        });*/
-        //}
 
         ProgressDialog mProgress = new ProgressDialog(this);
         mProgress.setCanceledOnTouchOutside(false);
+
+
         mProgress.show();
         acctFirebase.getDatabase("users", mProgress, 0);
+
         mProgress.show();
         acctFirebase.getDatabase("requests", mProgress, 1);
+
+
+
     }
 
     public void initializeUiValues() {

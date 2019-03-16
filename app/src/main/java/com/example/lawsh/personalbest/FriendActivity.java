@@ -64,9 +64,10 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
 
     @Override
     public void update(Set<String> friends, Set<String> pendingFriends){
+        /*
         this.friends.clear();
         this.friends.addAll(friends);
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);*/
     }
 
     @Override
@@ -181,7 +182,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     }
 
     public void addFriend(String name){
-        if(!checkUser(name))
+        if(!validUser(name))
             notValidFriend();
         user.pendFriend(name);
         //show();
@@ -223,8 +224,8 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         return builder.create();
     }
 
-    public boolean checkUser(String email){
-        return fbase.collection("users").document(email) != null;
+    public boolean validUser(String email){
+        return fAdapter.getMap(email, 0).size() != 0;
     }
   
     public void startMessageActivity(int i){

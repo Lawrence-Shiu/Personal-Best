@@ -34,6 +34,9 @@ public class User implements Subject {
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
 
+    private int[] passive_steps;
+    private int[] active_steps;
+
     private Set<String> friends;
     private Set<String> pendingFriends = new HashSet<>();
 
@@ -115,6 +118,11 @@ public class User implements Subject {
         stepsTaken = (int) newSteps;
         editor.putInt(PASSIVE_KEY, stepsTaken);
         editor.apply();
+    }
+
+    public void setRecentActivity(int[] passive_steps, int[] active_steps) {
+        this.passive_steps = passive_steps;
+        this.active_steps = active_steps;
     }
 
     public void addActiveSteps(int newActiveSteps) {
@@ -202,6 +210,11 @@ public class User implements Subject {
         map.put("activeSteps", totalActiveSteps);
         map.put("friends", friends.toString());
         //map.put("pendingFriends", pendingFriends.toString());
+
+        for(int i = 0; i < 30; i++) {
+            map.put(i + PASSIVE_KEY, passive_steps[i]);
+            map.put(i + ACTIVE_KEY, active_steps[i]);
+        }
 
         return map;
     }

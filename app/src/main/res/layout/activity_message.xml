@@ -10,19 +10,26 @@
         android:id="@+id/back_btn"
         android:layout_width="60dp"
         android:layout_height="30dp"
-        android:text="Back"
-        android:textSize="10dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginLeft="350dp"
+        android:layout_toEndOf="@+id/friend_prog_button"
         android:width="60dp"
         android:height="30dp"
-        android:layout_marginLeft="350dp"/>
+        android:text="Back"
+        android:textSize="10dp" />
+
     <TextView
         android:id="@+id/user_name"
-        android:text="Chat"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="275dp"
+        android:layout_height="24dp"
         android:layout_alignParentTop="true"
-        android:layout_margin="5dp"
-        />
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp"
+        android:text="Chat" />
 
     <ScrollView
         android:id="@+id/scroll_view"
@@ -58,5 +65,18 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="5dp"
         android:text="send" />
+
+    <Button
+        android:id="@+id/friend_prog_button"
+        android:layout_width="60dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginLeft="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_toEndOf="@+id/user_name"
+        android:width="60dp"
+        android:height="30dp"
+        android:text="Prog"
+        android:textSize="10dp" />
 
 </RelativeLayout>

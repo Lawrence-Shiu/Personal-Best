@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import com.example.lawsh.personalbest.OnGetDataListener;
+
 import com.example.lawsh.personalbest.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-public class FirestoreAdapter {
+public class FirestoreAdapter implements IDatabase {
 
     private static FirestoreAdapter fireStoreAdapter = new FirestoreAdapter();
 
@@ -33,11 +34,9 @@ public class FirestoreAdapter {
     Map<String,Object> map;
     QuerySnapshot[] qs = new QuerySnapshot[2];
 
-    private FirestoreAdapter(){
+    private FirestoreAdapter() {
 
     }
-
-
 
     public static FirestoreAdapter getInstance(boolean testing, FirebaseFirestore fstore){
         if (testing)
@@ -108,22 +107,5 @@ public class FirestoreAdapter {
             }
         }
         return map;
-    }
-
-    public void readData(final OnGetDataListener listener) {
-        listener.onStart();
-        fstore.collection("users")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            //qs = task.getResult();
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
-                    }
-                });
-
     }
 }

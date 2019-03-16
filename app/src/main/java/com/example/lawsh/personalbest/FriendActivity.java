@@ -27,10 +27,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -169,7 +166,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     public void onItemClick(View view, int position) {
         if(deleteTrue == false) {
             startMessageActivity(position);
-        }else{
+        } else {
             removeFriend(position);
         }
         show();

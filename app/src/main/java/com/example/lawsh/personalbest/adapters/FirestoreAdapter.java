@@ -109,21 +109,4 @@ public class FirestoreAdapter {
         }
         return map;
     }
-
-    public void readData(final OnGetDataListener listener) {
-        listener.onStart();
-        fstore.collection("users")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            //qs = task.getResult();
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
-                    }
-                });
-
-    }
 }

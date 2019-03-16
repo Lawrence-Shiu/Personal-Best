@@ -138,7 +138,7 @@ public class User implements Subject {
 
     public void addFriend(String friend) {
         friends.add(friend);
-        editor.putStringSet("friends", friends).apply();
+       // editor.putStringSet("friends", friends).apply();
         fAdapter.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -170,7 +170,7 @@ public class User implements Subject {
     public void removeFriend(String friend) {
         friends.remove(friend);
         //editor.remove(friend).apply(); //
-        editor.putStringSet("friends", friends).apply();
+       // editor.putStringSet("friends", friends).apply();
         fAdapter.getMap(friend,0).put("friends", friends);
         fAdapter.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
@@ -222,7 +222,7 @@ public class User implements Subject {
         //editor.remove(friend).apply();
         Map<String, Object> map = fAdapter.getMap(friend,1);
         pendingFriends.remove(friend);
-        editor.putStringSet("pending_friends", friends).apply();
+       // editor.putStringSet("pending_friends", friends).apply();
         map.put("pendingFriends", pendingFriends.toString());
 
 
@@ -244,12 +244,13 @@ public class User implements Subject {
         String str = (String)map.get("pendingFriends");
         String[] s;
         if(str == null) {
-            str = "";
             s = new String[0];
         }
         else {
-            str.substring(1, str.length() - 1);
+            str = str.substring(1, str.length() - 1);
+            //Log.d("PendingFriendActivity", );
             s = str.split(",");
+
         }
         List<String> tempPend = new ArrayList<>();
         for(String fr: s) {

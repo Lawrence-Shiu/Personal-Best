@@ -57,6 +57,8 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     String email;
     String id;
+    ProgressDialog mProgress;
+    FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
 
     private static final String TAG = "friendActivity";
 
@@ -69,6 +71,15 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mProgress = new ProgressDialog(this);
+        mProgress.setCanceledOnTouchOutside(false);
+
+        // update pending friends database
+        mProgress.show();
+        FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+        acctFirebase.getDatabase("requests", mProgress, 0);
+
+
         user.addObserver(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
@@ -108,6 +119,10 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         pendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mProgress.show();
+                acctFirebase.getDatabase("users", mProgress, 0);
+                mProgress.show();
+                acctFirebase.getDatabase("requests", mProgress, 1);
                 Intent pendActivity = new Intent(FriendActivity.this, PendingFriendActivity.class);
                 startActivity(pendActivity);
             }
@@ -117,12 +132,22 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mProgress.setCanceledOnTouchOutside(false);
+                mProgress.show();
+                FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+                acctFirebase.getDatabase("users", mProgress, 0);
+                mProgress.show();
+                acctFirebase.getDatabase("requests", mProgress, 1);
                 finish();
             }
         });
 
+        Set f = user.getFriends();
+        friends.clear();
+        friends.addAll(f);
         recyclerView = findViewById(R.id.my_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        Collections.sort(friends);
         adapter = new FriendAdapter(this, friends);
         adapter.setClickListener(this);
         show();
@@ -132,9 +157,9 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
         //fAdapter.getDatabase(user, mProgress);
         //while(mProgress.isShowing()){}
 
-        Set f = user.getFriends();
-        friends.clear();
-        friends.addAll(f);
+        //Set f = user.getFriends();
+        //friends.clear();
+        //friends.addAll(f);
         Collections.sort(friends);
         recyclerView.setAdapter(adapter);
     }

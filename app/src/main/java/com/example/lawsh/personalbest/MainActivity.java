@@ -335,9 +335,9 @@ public class MainActivity extends AppCompatActivity {
         int height = prefs.getInt("height", 0);
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
-        Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
+        //Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
         //Set<String> pendingFriends = prefs.getStringSet("pending_friends", new HashSet<String>());
-        //Set<String> friends = new HashSet<>();
+        Set<String> friends = new HashSet<>();
         Set<String> pendingFriends = new HashSet<>();
         //editor.putStringSet("pending_friends", pendingFriends).apply();
 
@@ -369,6 +369,7 @@ public class MainActivity extends AppCompatActivity {
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
         user.setFriends(friends);
+        /*
         acctFirebase.updateDatabase(user.getEmail(),user.toMap(), new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -379,9 +380,8 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(Exception e) {
                 Log.d("PendingFriendActivity", "Error writing document", e);
             }
-        });
+        });*/
         //}
-
 
         ProgressDialog mProgress = new ProgressDialog(this);
         mProgress.setCanceledOnTouchOutside(false);

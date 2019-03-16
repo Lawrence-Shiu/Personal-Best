@@ -1,5 +1,6 @@
 package com.example.lawsh.personalbest;
 
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -37,6 +38,9 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     String email;
     String id;
+    ProgressDialog mProgress;
+    FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+
 
     private static final String TAG = "friendActivity";
 
@@ -49,6 +53,15 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mProgress = new ProgressDialog(this);
+        mProgress.setCanceledOnTouchOutside(false);
+
+        // update user database
+        mProgress.show();
+        FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+        acctFirebase.getDatabase("users", mProgress, 0);
+
+
         user.addObserver(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pending_friend);
@@ -81,10 +94,18 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mProgress.show();
+                acctFirebase.getDatabase("users", mProgress, 0);
+                mProgress.show();
+                acctFirebase.getDatabase("requests", mProgress, 1);
                 finish();
             }
         });
 
+        Set f = user.getPendingFriends();
+        pendingFriends.clear();
+        pendingFriends.addAll(f);
+        Collections.sort(pendingFriends);
         recyclerView = findViewById(R.id.my_recycler_view_pf);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new FriendAdapter(this, pendingFriends);
@@ -93,9 +114,6 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
     }
 
     public void show(){
-        Set f = user.getPendingFriends();
-        pendingFriends.clear();
-        pendingFriends.addAll(f);
         Collections.sort(pendingFriends);
         recyclerView.setAdapter(adapter);
     }
@@ -119,9 +137,9 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
 
     public void addFriend(int position){
         String friend = adapter.getItem(position);
+        pendingFriends.remove(position);
         user.addFriend(friend);
         user.removePendingFriend(friend);
-        pendingFriends.remove(position);
         show();
     }
 

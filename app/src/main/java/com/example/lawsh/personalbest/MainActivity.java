@@ -47,6 +47,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Observable;
@@ -58,7 +59,9 @@ public class MainActivity extends AppCompatActivity {
     private String fitnessServiceKey = "GOOGLE_FIT";
     private String ACTIVE_KEY = "ACTIVE_STEPS";
     private String PASSIVE_KEY = "PASSIVE_KEY";
-    private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    //private String[] dayArray = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    private int[] dayArray;
+
     public static final int REQ_CODE = 233;
     public final int RC_SIGN_IN = 1;
 
@@ -108,10 +111,19 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences.Editor editor;
     private SimpleDateFormat sdf;
 
+    private Calendar cal;
+    private int dayOfYear;
+
+    private int[] passive_steps;
+    private int[] active_steps;
 
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Create and populate recent activity
+        active_steps = new int[30];
+        passive_steps = new int[30];
 
         user = User.getInstance();
 
@@ -243,6 +255,16 @@ public class MainActivity extends AppCompatActivity {
     }
     */
 
+    //Array rotation utility
+    private void shiftLeft(int[] arr, int numTimes) {
+        for(int i = 0; i < (numTimes > 30 ? 30 : numTimes); i++) {
+            for(int j = 0; j < arr.length - 1; j++) {
+                arr[j] = arr[j + 1];
+            }
+            arr[arr.length - 1] = 0;
+        }
+    }
+
     public void startFriendActivity(){
         Intent activity = new Intent(MainActivity.this, FriendActivity.class);
         activity.putExtra("user_email", user.getEmail());
@@ -267,22 +289,6 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_progress) {
             Intent prog = new Intent(MainActivity.this, GraphActivity.class);
-            int[] active_steps = new int[30];
-            int[] passive_steps = new int[30];
-
-            /* Populate int arrays from SharedPreferences */
-            for(int i = 0; i < active_steps.length; i++){
-                active_steps[i] = prefs.getInt(dayArray[i]+"Active",0);
-                passive_steps[i] = prefs.getInt(dayArray[i]+"Passive",0);
-
-            }
-
-            int[] active_steps_for_graph = new int[7];
-            int[] passive_steps_for_graph = new int[7];
-            for(int i = 0; i < 7; i++) {
-                active_steps_for_graph[i] = active_steps[i];
-                passive_steps_for_graph[i] = passive_steps[i];
-            }
 
             prog.putExtra("ACTIVE_STEPS", active_steps);
             prog.putExtra("PASSIVE_STEPS", passive_steps);
@@ -336,7 +342,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signIn() {
-
         Intent signInIntent = GoogleSignIn.getClient(this, gso).getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
 
@@ -348,6 +353,28 @@ public class MainActivity extends AppCompatActivity {
         int currentGoal = prefs.getInt("goal", 5000);
         int currentSteps = prefs.getInt(PASSIVE_KEY, 0);
         Set<String> friends = prefs.getStringSet("friends", new HashSet<String>());
+
+        /* Populate int arrays from SharedPreferences */
+        for(int i = 0; i < 30; i++){
+            active_steps[i] = prefs.getInt(i + ACTIVE_KEY,0);
+            passive_steps[i] = prefs.getInt(i + PASSIVE_KEY,0);
+        }
+
+        cal = Calendar.getInstance();
+        dayOfYear = cal.get(Calendar.DAY_OF_YEAR);
+        int daysPassed = 0;
+        int lastDateOpened = prefs.getInt("DAY", -1);
+        if(dayOfYear - lastDateOpened > 0) {
+            daysPassed = dayOfYear - lastDateOpened;
+            resetStepsBecauseDayHasPassed();
+        } else if (dayOfYear - lastDateOpened < 0) {
+            daysPassed = 365 + dayOfYear - lastDateOpened;
+            resetStepsBecauseDayHasPassed();
+        }
+
+        editor.putInt("DAY", dayOfYear);
+        shiftLeft(active_steps, daysPassed);
+        shiftLeft(passive_steps, daysPassed);
 
         /* TODO: We need to retrieve data from the database instead of getting them from
          * TODO: the shared preference because the user might switch phone
@@ -367,6 +394,7 @@ public class MainActivity extends AppCompatActivity {
         user.setGoal(currentGoal);
         user.setSteps(currentSteps);
         user.setFriends(friends);
+        user.setRecentActivity(passive_steps, active_steps);
 
         acctFirebase.updateDatabase(user, new OnSuccessListener<Void>() {
             @Override
@@ -477,6 +505,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void resetStepsBecauseDayHasPassed() {
+        shiftLeft(passive_steps, 1);
+        shiftLeft(active_steps, 1);
+
+        passive_steps[29] = totalSteps;
+        active_steps[29] = activeSteps;
+
+        for(int i = 0; i < 30; i++) {
+            editor.putInt(i + PASSIVE_KEY, passive_steps[i]);
+            editor.putInt(i + ACTIVE_KEY, active_steps[i]);
+        }
+
+        totalSteps = 0;
+        activeSteps = 0;
+
+        user.setRecentActivity(passive_steps, active_steps);
+        user.setSteps(totalSteps);
+    }
+
     private void createNotificationChannel() {
 
         // Create the NotificationChannel, but only on API 26+ because
@@ -528,6 +575,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(String... text){
+            if(dayOfYear != cal.get(Calendar.DAY_OF_YEAR)) {
+                //Day has passed
+                resetStepsBecauseDayHasPassed();
+            }
             int goal = user.getCurrentGoal();
             if(totalSteps >= goal) {
                 goalMessageFirstAppearance = false;

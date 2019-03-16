@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.example.lawsh.personalbest.R;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +67,15 @@ public class MessageActivity extends AppCompatActivity {
         sharedpreferences.edit().putString(FROM_KEY, from).apply();
     }
 
+    private void showFriendProgress() {
+        int[] active_steps = getFriendActiveProgress()
+    }
+
+    private void getFriendActiveProgress() {
+        friendID = intent.getStringExtra("friend_email");
+
+    }
+
     private void sendMessage() {
         EditText messageView = findViewById(R.id.text_message);
 
@@ -87,6 +97,7 @@ public class MessageActivity extends AppCompatActivity {
     public void buildDocKey() {
         String id = user.getEmail();
         friendID = intent.getStringExtra("friend_email");
+
 
         String cleanedFriendID = cleanEmail(friendID);
         String cleanedOwnID = cleanEmail(id);

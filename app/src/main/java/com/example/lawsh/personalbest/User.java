@@ -96,14 +96,6 @@ public class User{
         this.active_steps = active_steps;
     }
 
-    public int[] getPassiveSteps() {
-        return passive_steps;
-    }
-
-    public int[] getActiveSteps() {
-        return active_steps;
-    }
-
     public void addActiveSteps(int newActiveSteps) {
         totalActiveSteps = pref.getInt(ACTIVE_KEY, 0);
         totalActiveSteps += newActiveSteps;
@@ -148,6 +140,11 @@ public class User{
         map.put("currentGoal", currentGoal);
         map.put("activeSteps", totalActiveSteps);
         map.put("friends", friends.toString());
+
+        for(int i = 0; i < 30; i++) {
+            map.put(i + PASSIVE_KEY, passive_steps[i]);
+            map.put(i + ACTIVE_KEY, active_steps[i]);
+        }
 
         return map;
     }

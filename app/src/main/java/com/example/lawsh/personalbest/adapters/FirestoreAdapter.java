@@ -4,6 +4,7 @@ import com.example.lawsh.personalbest.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 public class FirestoreAdapter {
 
@@ -12,11 +13,9 @@ public class FirestoreAdapter {
     private FirebaseFirestore fstore;
 
 
-    private FirestoreAdapter(){
+    private FirestoreAdapter() {
 
     }
-
-
 
     public static FirestoreAdapter getInstance(boolean testing, FirebaseFirestore fstore){
         if (testing)
@@ -33,7 +32,6 @@ public class FirestoreAdapter {
     }
 
     public void updateDatabase(User user, OnSuccessListener<Void> successListener, OnFailureListener failureListener) {
-        System.out.println(user.getId());
         fstore.collection("users").document(user.getId()).set(user.toMap()).addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }

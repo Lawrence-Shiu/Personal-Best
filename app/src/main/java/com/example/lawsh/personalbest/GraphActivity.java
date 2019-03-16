@@ -58,41 +58,10 @@ public class GraphActivity extends AppCompatActivity {
         }
         Log.d("GraphActivity", dayOfWeek);
 
-        //make sure array actually starts on correct day
-        int numToRotate = determineNumToRotate(dayOfWeek);
-        int[] rotatedActiveSteps = rotateArrayLeft(active_steps, numToRotate);
-        int[] rotatedPassiveSteps = rotateArrayLeft(passive_steps, numToRotate);
-
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         IChart chart = new HorizontalBarChartAdapter(progress);
         makeToolbar(mToolbar);
-        makeGraph(chart, rotatedActiveSteps, rotatedPassiveSteps);
-    }
-
-    private int determineNumToRotate(String dayOfWeek) {
-        switch(dayOfWeek) {
-            case "Sunday": Log.d("Graph", "Sunday"); return 0;
-            case "Monday": return 1;
-            case "Tuesday": return 2;
-            case "Wednesday": return 3;
-            case "Thursday": return 4;
-            case "Friday": return 5;
-            case "Saturday": return 6;
-        }
-        Log.d("Graph", "Switch failed");
-        return 0;
-    }
-
-    //Array rotation utility
-    private int[] rotateArrayLeft(int[] arr, int numTimes) {
-        int[] copy = arr.clone();
-        for(int i = 0; i < numTimes; i++) {
-            for(int j = 1; j < arr.length; j++) {
-                copy[j - 1] = arr[j];
-            }
-            arr[arr.length - 1] = arr[0];
-        }
-        return copy;
+        makeGraph(chart, active_steps, passive_steps);
     }
 
     public void makeToolbar(Toolbar toolbar) {

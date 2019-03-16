@@ -14,6 +14,7 @@
             android:label="@string/title_activity_pending_friend"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".MessageActivity" />
+
         <activity
             android:name=".FriendActivity"
             android:label="@string/title_activity_friend"

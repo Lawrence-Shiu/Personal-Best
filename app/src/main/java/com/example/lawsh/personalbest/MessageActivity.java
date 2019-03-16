@@ -46,7 +46,7 @@ public class MessageActivity extends AppCompatActivity {
 
         from = sharedpreferences.getString(FROM_KEY, null);
         FirebaseApp.initializeApp(this);
-        chat = new FBAdapter(FirebaseFirestore.getInstance()
+        chat = new FBAdapter(DOCUMENT_KEY, FirebaseFirestore.getInstance()
                 .collection(COLLECTION_KEY)
                 .document(DOCUMENT_KEY)
                 .collection(MESSAGES_KEY));

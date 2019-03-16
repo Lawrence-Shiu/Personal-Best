@@ -3,7 +3,6 @@ package com.example.lawsh.personalbest.adapters;
 import android.app.ProgressDialog;
 import android.support.annotation.NonNull;
 import android.util.Log;
-
 import com.example.lawsh.personalbest.OnGetDataListener;
 import com.example.lawsh.personalbest.User;
 import com.google.android.gms.tasks.OnCompleteListener;

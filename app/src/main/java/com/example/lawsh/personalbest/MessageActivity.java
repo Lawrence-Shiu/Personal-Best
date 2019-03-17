@@ -66,7 +66,7 @@ public class MessageActivity extends AppCompatActivity {
         findViewById(R.id.btn_send).setOnClickListener(view -> sendMessage());
         findViewById(R.id.back_btn).setOnClickListener(view -> finish());
         findViewById(R.id.friend_prog_button).setOnClickListener(view -> {
-            Map<String, Object> map = FirestoreAdapter.getInstance(false, FirebaseFirestore.getInstance()).getMap(friendID, 0);
+            Map<String, Object> map = FirestoreAdapter.getInstance().getMap(friendID, 0);
             showFriendProgress(map, intent.getStringExtra("friend_email"));
         });
 

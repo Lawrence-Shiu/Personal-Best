@@ -1,4 +1,4 @@
-package com.example.lawsh.personalbest;
+/*package com.example.lawsh.personalbest;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -95,4 +95,4 @@ public class SetupTest {
         Assert.assertNotEquals(lastToast, null);
         Assert.assertEquals(pref.getInt("height", 0), 0);
     }
-}
+}*/

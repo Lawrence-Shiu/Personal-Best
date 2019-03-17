@@ -44,7 +44,7 @@ public class User implements Subject {
     private String PASSIVE_KEY = "PASSIVE_KEY";
 
     private FirebaseFirestore acctFirebase;
-    private FirestoreAdapter fAdapter = FirestoreAdapter.getInstance(false, null);
+    private FirestoreAdapter fAdapter = FirestoreAdapter.getInstance();
 
     //other functionality?
     private List<Observer> observers = new ArrayList<>();

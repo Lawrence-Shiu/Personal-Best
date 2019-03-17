@@ -25,7 +25,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class FirestoreAdapter implements IDatabase {
 
-    private static FirestoreAdapter fireStoreAdapter = new FirestoreAdapter();
+    private static FirestoreAdapter fireStoreAdapter;
 
     private FirebaseFirestore fstore;
 
@@ -38,17 +38,13 @@ public class FirestoreAdapter implements IDatabase {
 
     }
 
-    public static FirestoreAdapter getInstance(boolean testing, FirebaseFirestore fstore){
-        if (testing)
-        {
-            FirestoreAdapter testFirestoreAdapter = new FirestoreAdapter();
-            testFirestoreAdapter.fstore = fstore;
-            return testFirestoreAdapter;
-        }
+    public static FirestoreAdapter getInstance(){
 
-        if (fireStoreAdapter.fstore == null){
+        if(fireStoreAdapter == null) {
+            fireStoreAdapter = new FirestoreAdapter();
             fireStoreAdapter.fstore = FirebaseFirestore.getInstance();
         }
+
         return fireStoreAdapter;
     }
 

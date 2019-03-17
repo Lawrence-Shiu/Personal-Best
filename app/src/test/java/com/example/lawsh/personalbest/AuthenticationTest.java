@@ -67,7 +67,8 @@ public class AuthenticationTest {
         Mockito.when(mAuth.signInWithCredential(cred)).thenReturn(firebaseSignIn);
         Mockito.when(firebaseSignIn.addOnCompleteListener(compListener)).thenReturn(firebaseSignIn);
 
-        auth = new AuthenticationAdapter(context, gso, client);
+        auth = AuthenticationAdapter.getInstance();
+        auth.setmGoogleApiClient(context, gso, client);
     }
 
     @Test

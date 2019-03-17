@@ -13,11 +13,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.HashMap;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({FirebaseFirestore.class})
 public class FirebaseTest {
 
     private final String id = "jimmy_12345";
@@ -35,7 +38,11 @@ public class FirebaseTest {
         CollectionReference collectionReference = Mockito.mock(CollectionReference.class);
         Task task = Mockito.mock(Task.class);
 
-        firestoreAdapter = FirestoreAdapter.getInstance(true, fireBase);
+        PowerMockito.mockStatic(FirebaseFirestore.class);
+
+        Mockito.when(FirebaseFirestore.getInstance()).thenReturn(fireBase);
+
+        firestoreAdapter = FirestoreAdapter.getInstance();
         Mockito.when(fireBase.collection("users")).thenReturn(collectionReference);
         Mockito.when(collectionReference.document(id)).thenReturn(documentReference);
         Mockito.when(documentReference.set(map)).thenReturn(task);
@@ -43,13 +50,15 @@ public class FirebaseTest {
         Mockito.when(task.addOnFailureListener(failureListener)).thenReturn(task);
 
         user = Mockito.mock(User.class);
-        Mockito.when(user.getId()).thenReturn(id);
+        Mockito.when(user.getEmail()).thenReturn(id);
         Mockito.when(user.toMap()).thenReturn(map);
+
     }
 
     @Test
     public void updateTest(){
-        firestoreAdapter.updateDatabase(user, successListener, failureListener);
+        firestoreAdapter.updateDatabase(user.getEmail(), user.toMap(),
+                successListener, failureListener);
         Mockito.verify(documentReference).set(map);
     }
 

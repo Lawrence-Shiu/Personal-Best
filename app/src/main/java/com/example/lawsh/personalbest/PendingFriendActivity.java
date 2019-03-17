@@ -39,7 +39,7 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
     String email;
     String id;
     ProgressDialog mProgress;
-    FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+    FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance();
 
 
     private static final String TAG = "friendActivity";
@@ -59,7 +59,7 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
 
         // update user database
         mProgress.show();
-        FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+        FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance();
         acctFirebase.getDatabase("users", mProgress, 0);
 
 
@@ -69,7 +69,7 @@ public class PendingFriendActivity extends AppCompatActivity implements FriendAd
 
         // data to populate the RecyclerView with
         pendingFriends = new ArrayList<>();
-        fAdapter = FirestoreAdapter.getInstance(false, null);
+        fAdapter = FirestoreAdapter.getInstance();
         fbase = fAdapter.getFirestoreInstance();
 
         // set up buttons

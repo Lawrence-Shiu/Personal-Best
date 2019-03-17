@@ -28,7 +28,7 @@ import static android.provider.Settings.System.getString;
 
 public class AuthenticationAdapter {
 
-    private static AuthenticationAdapter authenticationAdapter = new AuthenticationAdapter();
+    private static AuthenticationAdapter authenticationAdapter;
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -43,6 +43,10 @@ public class AuthenticationAdapter {
         currentUser = mAuth.getCurrentUser();
     }
     public static AuthenticationAdapter getInstance(){
+        if(authenticationAdapter == null)
+        {
+            authenticationAdapter = new AuthenticationAdapter();
+        }
         return authenticationAdapter;
     }
 

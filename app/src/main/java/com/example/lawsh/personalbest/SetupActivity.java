@@ -41,7 +41,7 @@ public class SetupActivity extends AppCompatActivity {
         map.put("activeSteps", 0);
         map.put("friends", "[]");
 
-        FirestoreAdapter.getInstance(false, null).
+        FirestoreAdapter.getInstance().
                 updateDatabase(User.getInstance().getEmail(), map, new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {

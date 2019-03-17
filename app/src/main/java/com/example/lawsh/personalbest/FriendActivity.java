@@ -55,7 +55,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
     String email;
     String id;
     ProgressDialog mProgress;
-    FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+    FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance();
 
     private static final String TAG = "friendActivity";
 
@@ -74,7 +74,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
 
         // update pending friends database
         mProgress.show();
-        FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+        FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance();
         acctFirebase.getDatabase("requests", mProgress, 0);
 
 
@@ -84,7 +84,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
 
         // data to populate the RecyclerView with
         friends = new ArrayList<>();
-        fAdapter = FirestoreAdapter.getInstance(false, null);
+        fAdapter = FirestoreAdapter.getInstance();
         fbase = fAdapter.getFirestoreInstance();
 
         // set up buttons
@@ -132,7 +132,7 @@ public class FriendActivity extends AppCompatActivity implements FriendAdapter.I
             public void onClick(View view) {
                 mProgress.setCanceledOnTouchOutside(false);
                 mProgress.show();
-                FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance(false, null);
+                FirestoreAdapter acctFirebase = FirestoreAdapter.getInstance();
                 acctFirebase.getDatabase("users", mProgress, 0);
                 mProgress.show();
                 acctFirebase.getDatabase("requests", mProgress, 1);
